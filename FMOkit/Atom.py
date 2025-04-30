@@ -10,7 +10,6 @@ class Atom:
             - x (float): The x-coordinate of the atom.
             - y (float): The y-coordinate of the atom.
             - z (float): The z-coordinate of the atom.
-            - atom_id (int): The ID of the atom in the system.
         """
         self.id = kwargs["id"]
         self.type_symbol = kwargs["type_symbol"]
@@ -19,7 +18,6 @@ class Atom:
         self.x = kwargs["x"]
         self.y = kwargs["y"]
         self.z = kwargs["z"]
-        self.atom_id = kwargs["atom_id"]
 
     def __repr__(self):
         return f"<{self.id:3d} ({self.atom_id:<3}) {self.x:7.3f} {self.y:7.3f} {self.z:7.3f}>"
