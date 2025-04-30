@@ -21,7 +21,7 @@ class Fragment:
         Calculate the total charge of the fragment.
         :return: The total charge of the fragment.
         """
-        return sum(atom.charge for atom in self.atoms)
+        return int(round(sum(atom.charge for atom in self.atoms)))
     
     @property
     def fragment_name(self):
