@@ -4,16 +4,16 @@ class Fragment:
         Initialize a Fragment object with the given parameters.
         :param kwargs: Dictionary containing the parameters for the Fragment.
             - comp_id (str): The component ID of the fragment.
-            - asim_id (str): The asymmetric ID of the fragment.
+            - asym_id (str): The asymmetric ID of the fragment.
             - seq_id (int): The sequence ID of the fragment.
         """
         self.comp_id: str = kwargs["comp_id"]
-        self.asim_id: str = kwargs["asim_id"]
+        self.asym_id: str = kwargs["asym_id"]
         self.seq_id: int = kwargs["seq_id"]
         self.atoms: List[Atom] = []
 
     def __repr__(self):
-        return f"{self.comp_id}: {self.asim_id} {self.seq_id} ({len(self.atoms)} atoms)"
+        return f"{self.comp_id}: {self.asym_id} {self.seq_id} ({len(self.atoms)} atoms)"
     
     @property
     def charge(self):
