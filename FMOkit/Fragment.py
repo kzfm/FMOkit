@@ -40,7 +40,7 @@ class Fragment:
         return "\n".join(atom.fmoxyz for atom in self.atoms) + "\n"
     
     @property
-    def fmoindat(self):
+    def indat(self):
         """
         1.	Extracts and sorts the seq attribute from all atoms.
 	    2.	Compresses consecutive integers into ranges, using a format like:
