@@ -1,6 +1,27 @@
 import gemmi
 from .Fragment import Fragment
 from .Atom import Atom
+from .hyb_carbon import hybrid_orbitals
+
+ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
+           "f": 9, "p": 15, "cl": 17, "br": 35}
+AAs = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
+        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL"]
+def coef_format(coef):
+    """
+    Format the coefficient for FMO.
+    :param coef: The coefficient value.
+    :return: The formatted coefficient string.
+    """
+    formatted = ""
+    for l in coef.split("\n"):
+        els = l.split()
+        if len(els) > 0:
+            if els[0] in ["0", "1"]:
+                formatted +=  f"    {els[0]} {els[1]}" + "".join(f"{float(v):11.6f}" for v in els[2:]) + "\n"
+            else:
+                formatted += f"       " + "".join(f"{float(v):11.6f}" for v in els) + "\n"
+    return formatted.rstrip('\n')
 
 class System:
     def __init__(self, **kwargs):
@@ -9,16 +30,8 @@ class System:
         self.memory: int = kwargs["memory"]
         self.basissets: str = kwargs["basissets"]
         self.fragments: List[Fragment] = []
-    
-    def print_header(self):
-        """
-        Generate the header for the system.
-        :return: The header string.
-        """
-        return f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
- $system mwords={int(self.memory * 1000 / (self.cores * 8))} memddi=0 $end
- $gddi ngroup={self.nodes} $end
- $scf dirscf=.t. npunch=0 $end"""
+        self.title: str = "Structure from PDB" # todo: add title to the structure file
+        self.cached_fmobnd: str = ""
 
     def read_file(self, structure_file: str):
         """
@@ -65,4 +78,181 @@ class System:
                 self.fragments.append(fragment)
             fragment.atoms.append(atom)
 
-        return table
+    @property
+    def fmoheader(self):
+        """
+        Generate the header for the system.
+        :return: The header string.
+        """
+        return f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
+ $system mwords={int(self.memory * 1000 / (self.cores * 8))} memddi=0 $end
+ $gddi ngroup={self.nodes} $end
+ $scf dirscf=.t. npunch=0 $end"""
+
+    @property
+    def fmoprp(self):
+        """
+        Generate the FMO property string.
+        :return: The FMO property string.
+        """
+        return f""" $fmoprp
+   ngrfmo(1)={self.nodes},{self.nodes},0,0,0,  0,0,0,0,0
+   ipieda=1
+   naodir=220
+   nprint=9
+   maxit=100
+ $end"""
+
+    @property
+    def icharge(self):
+        charges = [f"{f.charge:> d}" for f in self.fragments]
+        lines = [
+                ("      icharg(1)=" if i == 0 else "                ") +
+                ",".join(charges[i:i+10]) +
+                ("\n" if i + 10 >= len(charges) else ",\n")
+                for i in range(0, len(charges), 10)
+                ]
+        return ''.join(lines)
+
+    @property
+    def fmofragnam(self):
+        """
+        Generate the FMO fragment names string.
+        :return: The FMO fragment names string.
+        """
+        fragment_names = [f.fragment_name for f in self.fragments]
+        lines = [
+            ("      frgnam(1)= " if i == 0 else "                 ") +
+            ", ".join(fragment_names[i:i+5]) +
+            (",\n" if i + 5 < len(fragment_names) else "\n")
+            for i in range(0, len(fragment_names), 5)
+        ]
+        return "".join(lines)
+
+    @property
+    def indat(self):
+        return "      indat(1)= 0\n" + ''.join(frag.indat for frag in self.fragments)
+
+    @property
+    def fmo(self):
+        """
+        Generate the FMO section string.
+        :return: The FMO section string.
+        """
+        return (
+            f" $fmo\n"
+            f"      nlayer=1\n"
+            f"      mplevl(1)=2\n"
+            f"      nfrag={len(self.fragments)}\n"
+            f"{self.icharge}"
+            f"{self.fmofragnam}"
+            f"{self.indat}"
+            f" $end"
+            )
+    
+    @property
+    def fmohyb(self):
+        """
+        Generate the FMO hybrid orbital.
+        :return: The FMO hybrid orbitarl string.
+        """
+        if self.basissets   not in hybrid_orbitals:
+            raise ValueError(f"Basis sets {self.basissets} is not supported.")
+        else:
+            return f""" $fmohyb
+  {hybrid_orbitals[self.basissets]["name"]:<10}{hybrid_orbitals[self.basissets]["bda"]:>4}{hybrid_orbitals[self.basissets]["baa"]:>4}
+{coef_format(hybrid_orbitals[self.basissets]["coef"])}
+  {hybrid_orbitals["MINI"]["name"]:<10}{hybrid_orbitals["MINI"]["bda"]:>4}{hybrid_orbitals["MINI"]["baa"]:>4}
+{coef_format(hybrid_orbitals["MINI"]["coef"])}
+ $end"""
+
+    @property
+    def fmobnd(self):
+        """
+        Generate the FMO bond string.
+        :return: The FMO bond string.
+        """
+        lines = [" $fmobnd"]
+        for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
+            if (
+                frg1.asym_id == frg2.asym_id and
+                frg2.seq_id - frg1.seq_id == 1 and 
+                frg1.comp_id in AAs and
+                frg2.comp_id in AAs
+            ):
+                ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
+                lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+        return '\n'.join(lines) + "\n $end"
+    
+    @property
+    def fmodata(self):
+        """
+        Generate the FMO data string.
+        :return: The FMO data string.
+        """
+        atoms = [atom.type_symbol.lower() for fragment in self.fragments for atom in fragment.atoms]
+        atoms = list(set(atoms))
+        lines = [f" $data\n {self.title}\n C1"]
+        for a in atoms:
+            lines.append(f" {a}.1-1  {ANUMBERS[a]:>4}")
+
+            if self.basissets == "STO-3G":
+                lines.append("       sto 3\n")
+            elif self.basissets == "6-31G":
+                if a in ANUMBERS:
+                    lines.append("       n31 6\n")
+                else:
+                    print(f"{a} is not in fmodata")
+                    exit()
+            else:
+                print(f"basis sets({self.basissets}) is not implemented yet")
+                exit()
+        lines.append(" $end\n")
+        return "\n".join(lines).rstrip('\n')
+
+    @property
+    def fmoxyz(self):
+        """
+        Generate the FMO XYZ format for the system.
+        :return: The FMO XYZ format string.
+        """
+        atoms = sorted(
+                    (atom for fragment in self.fragments for atom in fragment.atoms),
+                    key=lambda atom: atom.id
+                    )
+        return  " $fmoxyz\n" + "\n".join(atom.fmoxyz for atom in atoms) + "\n $end"
+#        return  " $fmoxyz\n" + "".join(fragment.fmoxyz for fragment in self.fragments) + " $end"
+
+    def prepare_fragments(self):
+        self.cached_fmobnd = self.fmobnd # todo
+        self.process_peptide_bond()
+
+    def process_peptide_bond(self):
+        """
+        Process the peptide bond between fragments.
+        This method modifies the fragments by moving the C and O atoms from one fragment to the next.
+        """
+        for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
+            if (
+                frg1.asym_id == frg2.asym_id and
+                frg2.seq_id - frg1.seq_id == 1 and 
+                frg1.comp_id in AAs and
+                frg2.comp_id in AAs
+            ):
+                frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("C")))
+                frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("O")))
+
+    def print_fmoinput(self):
+        """
+        Generate the FMO input for the system.
+        :return: The FMO input string.
+        """
+        return (
+                f"{self.fmoheader}\n"
+                f"{self.fmoprp}\n"
+                f"{self.fmo}\n"
+                f"{self.fmohyb}\n"
+                f"{self.cached_fmobnd or self.fmobnd}\n"
+                f"{self.fmodata}\n"
+                f"{self.fmoxyz} \n"
+                )   
