@@ -1,3 +1,4 @@
+# Ref: https://pdbj.org/cms-data/workshop/20200916/mmCIF_20200915.pdf
 class Atom:
     def __init__(self, **kwargs):
         """
