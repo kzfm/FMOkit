@@ -87,3 +87,14 @@ class Fragment:
             if atom.atom_id == atom_id:
                 return atom
         return None
+
+    def find_atom_index(self, atom_id):
+        """
+        Find the index of an atom in the fragment by its ID.
+        :param atom_id: The ID of the atom to find.
+        :return: The index of the Atom object if found, otherwise None.
+        """
+        for i, atom in enumerate(self.atoms):
+            if atom.atom_id == atom_id:
+                return i
+        return None
