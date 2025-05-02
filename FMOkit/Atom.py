@@ -11,13 +11,13 @@ class Atom:
             - y (float): The y-coordinate of the atom.
             - z (float): The z-coordinate of the atom.
         """
-        self.id = kwargs["id"]
-        self.type_symbol = kwargs["type_symbol"]
-        self.atom_id = kwargs["atom_id"]
-        self.charge = kwargs["charge"]
-        self.x = kwargs["x"]
-        self.y = kwargs["y"]
-        self.z = kwargs["z"]
+        self.id: int = kwargs["id"]
+        self.type_symbol: str = kwargs["type_symbol"]
+        self.atom_id: str = kwargs["atom_id"]
+        self.charge: float = kwargs["charge"]
+        self.x: float = kwargs["x"]
+        self.y: float = kwargs["y"]
+        self.z: float = kwargs["z"]
 
     def __repr__(self):
         return f"<{self.id:3d} ({self.atom_id:<3}) {self.x:7.3f} {self.y:7.3f} {self.z:7.3f}>"
