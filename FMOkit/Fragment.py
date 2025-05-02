@@ -76,3 +76,14 @@ class Fragment:
             lines.append("          " + line)
 
         return '\n'.join(lines) + '\n'
+
+    def find_atom(self, atom_id):
+        """
+        Find an atom in the fragment by its ID.
+        :param atom_id: The ID of the atom to find.
+        :return: The Atom object if found, otherwise None.
+        """
+        for atom in self.atoms:
+            if atom.atom_id == atom_id:
+                return atom
+        return None
