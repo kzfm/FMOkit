@@ -30,7 +30,7 @@ def parse_gamout(gamout, output):
     pieda_re = re.compile(" -{105}\n(.*?)\n\n Total energy", re.DOTALL)
 
     with open(output, "w") as wf:
-        wf.write(f"I\tIFrg\tJ\tJFRG\tCOMPONENT\tENERGY\tTOTAL\n") # header
+        wf.write(f"I\tIFRG\tJ\tJFRG\tCOMPONENT\tENERGY\tTOTAL\n") # header
         frgs = {}
         gamout_str = open(gamout, "r").read()
         for m in fragment_re.finditer(gamout_str):
