@@ -12,8 +12,14 @@ import tempfile
 @click.argument("ifile")
 @click.argument("ofile")
 @click.option("--minimize", is_flag=True, show_default=True, default=False, help="Minimize the system after adding hydrogens")
-def cli(ifile, ofile, minimize):   
-    pdb = PDBxFile(ifile)
+def cli(ifile, ofile, minimize):
+    if ifile.endswith(".cif"):
+        pdb = PDBxFile(ifile)
+    elif ifile.endswith(".pdb"):
+        pdb = PDBFile(ifile)
+    else:
+        print("not implemented yet")
+        raise NotImplementedError("Only cif and pdb formats are supported at the moment.")
     forcefield = ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
     modeller = Modeller(pdb.topology, pdb.positions)
     residues=modeller.addHydrogens(forcefield)
