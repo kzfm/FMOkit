@@ -85,7 +85,7 @@ class System:
         :return: The header string.
         """
         return f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
- $system mwords={int(self.memory * 1000 / (self.cores * 8))} memddi=0 $end
+ $system mwords={int(self.memory / (self.cores * 8))} memddi=0 $end
  $gddi ngroup={self.nodes} $end
  $scf dirscf=.t. npunch=0 $end"""
 
