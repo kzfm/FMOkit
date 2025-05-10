@@ -13,8 +13,6 @@ It consists of three main commands:
 - **`gamout2tsv`**  
   Processes GAMESS output files and extracts data into analysis-ready TSV format.
 
----
-
 ## Installation
 
 To install FMOkit, clone the repository and install it in editable mode:
@@ -35,17 +33,26 @@ This will register the commands mmcifprep, mmcif2fmoinp, and gamout2tsv for use 
 mmcifprep INPUT_FILE LIGAND_ID SMILES_STRING
 ```
 
+As this is the most important step, we recommend referring to [the accompanying Jupyter notebook](https://github.com/kzfm/FMOkit/blob/main/examples/prepare_complex-5law.ipynb), which demonstrates the process interactively and step by step.
+
 ### 2. Generate GAMESS input files
 
 ```bash
 mmcif2fmoinp INPUT
 ```
 
+Generates a GAMESS input file for FMO calculations from a preprocessed mmCIF file.
+Optionally, you can specify GAMESS computational resources such as the number of nodes, CPU cores, and memory size.
+The system is automatically divided into fragments based on residue IDs.
+Each fragment’s formal charge is computed by summing the partial charges of the atoms it contains, so partial charge information is required.
+
 ### 3. Extract results into a TSV file
 
 ```bash
 gamout2tsv GAMOUT
 ```
+
+Parses GAMESS output files and extracts PIEDA analysis results into TSV format, making the data compatible with common data science tools.
 
 ## Example
 
@@ -57,3 +64,7 @@ Code released under the [BSD license](LICENSE).
 
 Pull requests and feature suggestions are welcome.
 Please open an issue to discuss what you’d like to change.
+
+## Version history
+
+- 0.1: initial version
