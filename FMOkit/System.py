@@ -2,6 +2,7 @@ import gemmi
 from .Fragment import Fragment
 from .Atom import Atom
 from .hyb_carbon import hybrid_orbitals
+from math import dist
 
 ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
            "f": 9, "p": 15, "cl": 17}
@@ -23,6 +24,18 @@ def coef_format(coef):
             else:
                 formatted += f"       " + "".join(f"{float(v):11.6f}" for v in els) + "\n"
     return formatted.rstrip('\n')
+
+def atom_dist(atom1, atom2):
+    """
+    Calculate the distance between two atoms.
+    :param atom1: The first atom.
+    :param atom2: The second atom.
+    :return: The distance between the two atoms.
+    """
+    return dist(
+        (atom1.x, atom1.y, atom1.z),
+        (atom2.x, atom2.y, atom2.z)
+        )
 
 class System:
     def __init__(self, **kwargs):
@@ -195,9 +208,9 @@ class System:
         atoms = list(set(atoms))
         lines = [f" $data\n {self.title}\n C1"]
         for a in atoms:
-             if not a in ANUMBERS:
-                    print(f"{a} is not in fmodata")
-                    exit()
+            if not a in ANUMBERS:
+                print(f"{a} is not in fmodata")
+                exit()
             
             lines.append(f" {a}.1-1  {ANUMBERS[a]:>4}")
 
@@ -238,9 +251,12 @@ class System:
         return  " $fmoxyz\n" + "\n".join(atom.fmoxyz for atom in atoms) + "\n $end"
 #        return  " $fmoxyz\n" + "".join(fragment.fmoxyz for fragment in self.fragments) + " $end"
 
+### process fragments
+
     def prepare_fragments(self):
         self.cached_fmobnd = self.fmobnd # todo
         self.process_peptide_bond()
+        self.process_cys()
 
     def process_peptide_bond(self):
         """
@@ -257,6 +273,47 @@ class System:
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("C")))
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("O")))
 
+    def process_cys(self):
+        """
+        Process the system by merging fragments and searching for disulfide bonds.
+        """
+        cys_pairs =self.search_disulfied_bonds()
+        for cysname1, cysname2 in cys_pairs:
+            self.merge_fragments(cysname1, cysname2)
+
+    def merge_fragments(self, frgnam1, frgnam2):
+        """
+        Merge two fragments by their names.
+        :param frgnam1: The name of the first fragment.
+        :param frgnam2: The name of the second fragment.
+        """
+        frg2 = self.fragments.pop(self.find_index(frgnam2))
+        frg1 = self.fragments[self.find_index(frgnam1)]
+        for a in frg2.atoms:
+            frg1.atoms.append(a)
+    
+    def find_index(self, fragment_name):
+        """
+        Find the index of a fragment by its name.
+        :param fragment_name: The name of the fragment to find.
+        :return: The index of the fragment if found, otherwise None.
+        """
+        for i, fragment in enumerate(self.fragments):
+            if fragment.fragment_name == fragment_name:
+                return i
+        return None
+
+    def search_disulfied_bonds(self):
+        cyss = [f for f in self.fragments if f.comp_id == "CYS"]
+        sspairs = []
+        sspairs.extend(
+        (cys1.fragment_name, cys2.fragment_name)
+        for i, cys1 in enumerate(cyss[:-1])
+        for cys2 in cyss[i+1:]
+        if 1.9 < atom_dist(cys1.find_atom("SG"), cys2.find_atom("SG")) < 2.1
+        )
+        return sspairs
+ 
     def print_fmoinput(self):
         """
         Generate the FMO input for the system.
