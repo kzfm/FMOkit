@@ -4,7 +4,8 @@ from .Atom import Atom
 from .hyb_carbon import hybrid_orbitals
 
 ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
-           "f": 9, "p": 15, "cl": 17, "br": 35}
+           "f": 9, "p": 15, "cl": 17}
+
 AAs = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
         "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL"]
 def coef_format(coef):
@@ -194,16 +195,30 @@ class System:
         atoms = list(set(atoms))
         lines = [f" $data\n {self.title}\n C1"]
         for a in atoms:
+             if not a in ANUMBERS:
+                    print(f"{a} is not in fmodata")
+                    exit()
+            
             lines.append(f" {a}.1-1  {ANUMBERS[a]:>4}")
 
             if self.basissets == "STO-3G":
                 lines.append("       sto 3\n")
             elif self.basissets == "6-31G":
-                if a in ANUMBERS:
-                    lines.append("       n31 6\n")
-                else:
-                    print(f"{a} is not in fmodata")
-                    exit()
+                lines.append("       n31 6\n")
+            elif self.basissets.startswith("6-31G*"): # 6-31G* or 6-31G**
+                lines.append("       n31 6\n")                
+                if a in ["h"] and self.basissets == "6-31G**":
+                    lines.append("        d 1\n        1 1.100 1.0\n\n")
+                elif a in ["c", "n", "o", "f"]:
+                    lines.append("        d 1\n        1 0.800 1.0\n\n")
+                elif a in ["cl"]:
+                    lines.append("        d 1\n        1 0.750 1.0\n\n")
+                elif a in ["s"]:
+                    lines.append("        d 1\n        1 0.650 1.0\n\n")
+                elif a in ["p"]:
+                    lines.append("        d 1\n        1 0.550 1.0\n\n")
+                elif a in ["ca"]:
+                    lines.append("        d 1\n        1 0.200 1.0\n\n")                
             else:
                 print(f"basis sets({self.basissets}) is not implemented yet")
                 exit()
