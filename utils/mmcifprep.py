@@ -21,10 +21,11 @@ import os
 @click.argument("smiles_string")
 @click.option("--output", "-o", default="prepared.cif", help="preprocessed mmCIF file")
 @click.option("--minimize", is_flag=True, show_default=True, default=False, help="Minimize the system after adding hydrogens")
-def cli(input_file, ligand_id, smiles_string, minimize, output):
+@click.option("--allow_undefined_stereo", is_flag=True, show_default=True, default=False, help="Allow undefined stereochemistry in the ligand")
+def cli(input_file, ligand_id, smiles_string, minimize, output, allow_undefined_stereo):
     prepared_protein = prepare_protein(input_file, ignore_missing_residues=False)
     rdkit_ligand = prepare_ligand(input_file, ligand_id, smiles_string)
-    omm_ligand = rdkit_to_openmm(rdkit_ligand, ligand_id)
+    omm_ligand = rdkit_to_openmm(rdkit_ligand, ligand_id, allow_undefined_stereo=allow_undefined_stereo)
     complex_topology, complex_positions = merge_protein_and_ligand(prepared_protein, omm_ligand)
     forcefield = generate_forcefield(rdkit_ligand)
 
@@ -98,10 +99,10 @@ def prepare_ligand(pdb_file, resname, smiles, depict=False):
     # return ligand
     return prepared_ligand2
 
-def rdkit_to_openmm(rdkit_mol, name="LIG"):
+def rdkit_to_openmm(rdkit_mol, name="LIG", allow_undefined_stereo=False):
     # convert RDKit to OpenFF
     #off_mol = Molecule.from_rdkit(rdkit_mol, allow_undefined_stereo=True, hydrogens_are_explicit=True)
-    off_mol = Molecule.from_rdkit(rdkit_mol)
+    off_mol = Molecule.from_rdkit(rdkit_mol, allow_undefined_stereo=allow_undefined_stereo)
     
 
     # add name for molecule
