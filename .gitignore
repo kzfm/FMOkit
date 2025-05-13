@@ -3,3 +3,4 @@ tests/fuu
 tests/fmoutil
 FMOkit.egg-info
 build
+*.pyc
