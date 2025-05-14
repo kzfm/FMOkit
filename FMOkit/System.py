@@ -9,6 +9,9 @@ ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
 
 AAs = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
         "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL"]
+
+NTs = ["DA", "DG", "DC", "DT", "A", "G", "C", "U"]
+
 def coef_format(coef):
     """
     Format the coefficient for FMO.
@@ -190,12 +193,15 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if (
                 frg1.asym_id == frg2.asym_id and
-                frg2.seq_id - frg1.seq_id == 1 and 
-                frg1.comp_id in AAs and
-                frg2.comp_id in AAs
+                frg2.seq_id - frg1.seq_id == 1
             ):
-                ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
-                lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                if frg1.comp_id in AAs and frg2.comp_id in AAs:
+                    ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
+                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                elif frg1.comp_id in NTs and frg2.comp_id in NTs:
+                    c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
+                    lines.append(f"{-c1_atom.id:>8d}{c2_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+
         return '\n'.join(lines) + "\n $end"
     
     @property
@@ -256,6 +262,7 @@ class System:
     def prepare_fragments(self):
         self.cached_fmobnd = self.fmobnd # todo
         self.process_peptide_bond()
+        self.process_phosphodiester_bond()
         self.process_cys()
 
     def process_peptide_bond(self):
@@ -272,6 +279,21 @@ class System:
             ):
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("C")))
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("O")))
+
+    def process_phosphodiester_bond(self):
+        """
+        Process the phosphodiester bond between fragments.
+        This method modifies the fragments by moving the phosphate and oxygen atoms from one fragment to the next.
+        """
+        for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
+            if (
+                frg1.asym_id == frg2.asym_id and
+                frg2.seq_id - frg1.seq_id == 1 and 
+                frg1.comp_id in NTs and
+                frg2.comp_id in NTs
+            ):
+                for atom_id in ["P", "OP1", "OP2", "O5'", "C5'", "H5'", "H5''"]:
+                    frg1.atoms.append(frg2.atoms.pop(frg2.find_atom_index(atom_id)))
 
     def process_cys(self):
         """
