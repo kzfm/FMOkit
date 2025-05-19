@@ -17,17 +17,18 @@ import click
 @click.option("--cores", "-c", default=8, help="num of cores")
 @click.option("--memory", "-m", default=14000, help="memory in MB")
 @click.option("--basissets", "-b", default="6-31G", help="Basis Sets")
-def cli(input, output, nodes, cores, memory, basissets):
+@click.option("--charge", "-C", default="partial_charge", help="Basis Sets")
+def cli(input, output, nodes, cores, memory, basissets, charge):
     """
     Command line interface for the script.
     """
-    mkfmoinp(input, output, nodes, cores, memory, basissets)
+    mkfmoinp(input, output, nodes, cores, memory, basissets, charge)
 
-def mkfmoinp(input, output, nodes, cores, memory, basissets):
+def mkfmoinp(input, output, nodes, cores, memory, basissets, charge):
     """
     Generate FMO input file for GAMESS.
     """
-    s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets)
+    s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge=charge)
     s.read_file(input)
     s.prepare_fragments()
     with open(output, "w") as f:
