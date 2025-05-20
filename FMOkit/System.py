@@ -51,13 +51,13 @@ class System:
         self.cached_fmobnd: str = ""
         self.charge: str = kwargs["charge"]
 
-    def read_file(self, structure_file: str, charge=self.charge):
+    def read_file(self, structure_file: str):
         """
         Read the structure file and populate the fragments.
         :param structure_file: The path to the structure file.
         """
         if structure_file.endswith(".cif"):
-            self.from_cif(structure_file, charge=charge)
+            self.from_cif(structure_file)
         elif structure_file.endswith(".pdb"):
             print("pdb format is not supported")
             raise NotImplementedError("Only cif format is supported at the moment.")
@@ -65,7 +65,7 @@ class System:
             print("not implemented yet")
             raise NotImplementedError("Only cif format is supported at the moment.")
     
-    def from_cif(self, structure_file: str, charge: str = "partial_charge"):
+    def from_cif(self, structure_file: str):
         """
         Read a CIF file and populate the fragments.
         :param structure_file: The path to the CIF file.
@@ -74,7 +74,7 @@ class System:
         block = doc.sole_block()
 
         table = block.find("_atom_site.", ["id", "type_symbol", "label_atom_id", "Cartn_x",
-             "Cartn_y", "Cartn_z", charge, "label_comp_id", "label_asym_id", "label_seq_id"])
+             "Cartn_y", "Cartn_z", self.charge, "label_comp_id", "label_asym_id", "label_seq_id"])
 
         fragment = None
         for row in table:

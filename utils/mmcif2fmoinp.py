@@ -22,12 +22,6 @@ def cli(input, output, nodes, cores, memory, basissets, charge):
     """
     Command line interface for the script.
     """
-    mkfmoinp(input, output, nodes, cores, memory, basissets, charge)
-
-def mkfmoinp(input, output, nodes, cores, memory, basissets, charge):
-    """
-    Generate FMO input file for GAMESS.
-    """
     s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge=charge)
     s.read_file(input)
     s.prepare_fragments()
