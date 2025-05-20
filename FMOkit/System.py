@@ -50,6 +50,7 @@ class System:
         self.title: str = "Structure from PDB" # todo: add title to the structure file
         self.cached_fmobnd: str = ""
         self.charge: str = kwargs["charge"]
+        self.asym_id: str = kwargs["asym_id"]
 
     def read_file(self, structure_file: str):
         """

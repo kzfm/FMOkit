@@ -17,12 +17,13 @@ import click
 @click.option("--cores", "-c", default=8, help="num of cores")
 @click.option("--memory", "-m", default=14000, help="memory in MB")
 @click.option("--basissets", "-b", default="6-31G", help="Basis Sets")
-@click.option("--charge", "-C", default="partial_charge", help="Basis Sets")
-def cli(input, output, nodes, cores, memory, basissets, charge):
+@click.option("--charge", "-C", default="partial_charge", help="Charge Selection: Partial / Formal")
+@click.option("--asym_id", "-A", default="label_asym_id", help="Asym ID Selection: label_asym_id / auth_asym_id")
+def cli(input, output, nodes, cores, memory, basissets, charge, asym_id):
     """
     Command line interface for the script.
     """
-    s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge=charge)
+    s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge=charge, asym_id=asym_id)
     s.read_file(input)
     s.prepare_fragments()
     with open(output, "w") as f:
