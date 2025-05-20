@@ -77,7 +77,7 @@ class System:
         table = block.find("_atom_site.", ["id", "type_symbol", "label_atom_id", "Cartn_x",
              "Cartn_y", "Cartn_z", self.charge, "label_comp_id", "label_asym_id", "label_seq_id"])
 
-        fragment = None
+        fragment_dict = {}
         for row in table:
             atom = Atom(
                 id=int(row[0]),
@@ -92,9 +92,15 @@ class System:
             comp_id = row[7]
             asym_id = row[8]
             seq_id = int(row[9])
-            if fragment is None or seq_id != fragment.seq_id or asym_id != fragment.asym_id:
+
+            fragment_key = (comp_id, asym_id, seq_id)
+            if fragment_key not in fragment_dict:
                 fragment = Fragment(comp_id=comp_id, asym_id=asym_id, seq_id=seq_id)
+                fragment_dict[fragment_key] = fragment
                 self.fragments.append(fragment)
+            else:
+                fragment = fragment_dict[fragment_key]
+
             fragment.atoms.append(atom)
 
     @property
