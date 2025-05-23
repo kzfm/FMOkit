@@ -26,7 +26,7 @@ def parse_gamout(gamout, output):
     :param output: The output file name.
     """
     # Regular expressions to match the relevant sections in the GAMESS output
-    fragment_re = re.compile("CONV\n ={79}\n(.*?)\n\n Close fragment pairs", re.DOTALL)
+    fragment_re = re.compile("CONV\n ={70,90}\n(.*?)\n\n Close fragment pairs", re.DOTALL)
     pieda_re = re.compile(" -{105}\n(.*?)\n\n Total energy", re.DOTALL)
 
     with open(output, "w") as wf:
