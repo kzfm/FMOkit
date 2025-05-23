@@ -75,7 +75,7 @@ class System:
         block = doc.sole_block()
 
         table = block.find("_atom_site.", ["id", "type_symbol", "label_atom_id", "Cartn_x",
-             "Cartn_y", "Cartn_z", self.charge, "label_comp_id", "label_asym_id", "label_seq_id"])
+             "Cartn_y", "Cartn_z", self.charge, "label_comp_id", self.asym_id, "label_seq_id"])
 
         fragment_dict = {}
         for row in table:
