@@ -11,7 +11,7 @@ It consists of three main commands:
   Generates GAMESS input files for FMO calculations from the mmCIF files processed by `mmcifprep`.
 
 - **`gamoutparser`**  
-  Processes GAMESS output files and extracts data into analysis-ready TSV format.
+  Processes GAMESS output files and extracts data into analysis-ready CSV/TSV format.
 
 ## Installation
 
@@ -46,13 +46,13 @@ Optionally, you can specify GAMESS computational resources such as the number of
 The system is automatically divided into fragments based on residue IDs.
 Each fragment’s formal charge is computed by summing the partial charges of the atoms it contains, so partial charge information is required.
 
-### 3. Extract results into a TSV file
+### 3. Extract results into a CSV/TSV file
 
 ```bash
 gamoutparser GAMOUT
 ```
 
-Parses GAMESS output files and extracts PIEDA analysis results into TSV format, making the data compatible with common data science tools.
+Parses GAMESS output files and extracts PIEDA analysis results into CSV/TSV format, making the data compatible with common data science tools.
 
 ## Example
 
