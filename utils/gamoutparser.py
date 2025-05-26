@@ -8,11 +8,12 @@
 #    3    2 C1  0   0.00 -0.0257 -9582.357    0.764 -9581.593 -9320.896 -155.280  -77.719  -27.698    0.000
 
 import re
+import csv
 import click
 
 @click.command(help="gamout parser")
 @click.argument("gamout")
-@click.option("--output", "-o", default="pieda.tsv", help="Output file name")
+@click.option("--output", "-o", default="pieda.csv", help="Output file name")
 def cli(gamout, output):
     """
     Command line interface for the script.
@@ -25,27 +26,33 @@ def parse_gamout(gamout, output):
     :param gamout: The GAMESS output file.
     :param output: The output file name.
     """
+    fname, suffix = output.rsplit(".")
     # Regular expressions to match the relevant sections in the GAMESS output
     fragment_re = re.compile("CONV\n ={70,90}\n(.*?)\n\n Close fragment pairs", re.DOTALL)
     pieda_re = re.compile(" -{105}\n(.*?)\n\n Total energy", re.DOTALL)
 
-    with open(output, "w") as wf:
-        wf.write(f"I\tIFRG\tJ\tJFRG\tCOMPONENT\tENERGY\tTOTAL\n") # header
+    with open(output, 'w') as f:
+        if suffix == "tsv":
+            writer = csv.writer(f, delimiter="\t")
+        else:
+            writer = csv.writer(f)
+        writer.writerow(["I", "IFRG", "J", "JFRG", "COMPONENT", "ENERGY", "TOTAL"])
         frgs = {}
         gamout_str = open(gamout, "r").read()
+
         for m in fragment_re.finditer(gamout_str):
             for l in (m.group(1).split("\n")):
                 els = l.split()
                 frgs[int(els[0])] = els[1]
 
         for m in pieda_re.finditer(gamout_str):
-            for l in (m.group(1).split("\n")):
+            for l in m.group(1).split("\n"):
                 I, J, DL, Z, R, QIJ, EIJ, dDIJVIJ, total, Ees, Eex, Ectmix, Edisp, Gsol = l.split()
-                wf.write(f"{I}\t{frgs[int(I)]}\t{J}\t{frgs[int(J)]}\tES\t{Ees}\t{total}\n")
-                wf.write(f"{I}\t{frgs[int(I)]}\t{J}\t{frgs[int(J)]}\tEX\t{Eex}\t{total}\n")
-                wf.write(f"{I}\t{frgs[int(I)]}\t{J}\t{frgs[int(J)]}\tCT\t{Ectmix}\t{total}\n")
-                wf.write(f"{I}\t{frgs[int(I)]}\t{J}\t{frgs[int(J)]}\tDI\t{Edisp}\t{total}\n")
-                wf.write(f"{I}\t{frgs[int(I)]}\t{J}\t{frgs[int(J)]}\tSOL\t{Gsol}\t{total}\n")  
+                I, J = int(I), int(J)
+                components = [("ES",  Ees), ("EX", Eex), ("CT", Ectmix), ("DI", Edisp), ("SOL", Gsol)]
+                for tag, energy in components:
+                    for a, b in [(I, J), (J, I)]:
+                        writer.writerow([str(a), frgs[a], str(b), frgs[b], tag, energy, total])           
           
 if __name__ == "__main__":
     cli()
