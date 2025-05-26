@@ -10,7 +10,7 @@ It consists of three main commands:
 - **`mmcif2fmoinp`**  
   Generates GAMESS input files for FMO calculations from the mmCIF files processed by `mmcifprep`.
 
-- **`gamout2tsv`**  
+- **`gamoutparser`**  
   Processes GAMESS output files and extracts data into analysis-ready TSV format.
 
 ## Installation
@@ -23,7 +23,7 @@ cd FMOkit
 pip install -e .
 ```
 
-This will register the commands mmcifprep, mmcif2fmoinp, and gamout2tsv for use in your terminal.
+This will register the commands mmcifprep, mmcif2fmoinp, and gamoutparser for use in your terminal.
 
 ## Usage
 
@@ -49,7 +49,7 @@ Each fragment’s formal charge is computed by summing the partial charges of th
 ### 3. Extract results into a TSV file
 
 ```bash
-gamout2tsv GAMOUT
+gamoutparser GAMOUT
 ```
 
 Parses GAMESS output files and extracts PIEDA analysis results into TSV format, making the data compatible with common data science tools.
