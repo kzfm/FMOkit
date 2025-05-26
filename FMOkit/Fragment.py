@@ -29,7 +29,7 @@ class Fragment:
         Get the fragment name in the format "comp_id:seq_id".
         :return: The fragment name.
         """
-        return f"{self.comp_id}{self.seq_id:03d}"
+        return f"{self.comp_id}{self.seq_id:04d}{self.asym_id}"
     
     @property
     def fmoxyz(self):
