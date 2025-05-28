@@ -8,7 +8,7 @@ ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
            "f": 9, "p": 15, "cl": 17}
 
 AAs = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
-        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL"
+        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
         "HIE", "HID", "HIP", "LYN", "ASH", "GLH"]
 
 NTs = ["DA", "DG", "DC", "DT", "A", "G", "C", "U"]
