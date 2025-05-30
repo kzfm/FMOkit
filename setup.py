@@ -19,6 +19,6 @@ setup(
         [console_scripts]
         mmcifprep=utils.mmcifprep:cli
         mmcif2fmoinp=utils.mmcif2fmoinp:cli
-        gamout2tsv=utils.gamout2tsv:cli
+        gamoutparser=utils.gamoutparser:cli
     ''',
 )
