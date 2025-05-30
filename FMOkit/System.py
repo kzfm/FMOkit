@@ -248,18 +248,21 @@ class System:
                 lines.append("       n31 6\n")
             elif self.basissets.startswith("6-31G*"): # 6-31G* or 6-31G**
                 lines.append("       n31 6\n")                
-                if a in ["h"] and self.basissets == "6-31G**":
-                    lines.append("        d 1\n        1 1.100 1.0\n\n")
+                if a in ["h"]:
+                    if self.basissets == "6-31G**":
+                        lines.append("       d 1\n       1 1.100 1.0\n")
+                    else:
+                        lines.append("")
                 elif a in ["c", "n", "o", "f"]:
-                    lines.append("        d 1\n        1 0.800 1.0\n\n")
+                    lines.append("       d 1\n       1 0.800 1.0\n")
                 elif a in ["cl"]:
-                    lines.append("        d 1\n        1 0.750 1.0\n\n")
+                    lines.append("       d 1\n       1 0.750 1.0\n")
                 elif a in ["s"]:
-                    lines.append("        d 1\n        1 0.650 1.0\n\n")
+                    lines.append("       d 1\n       1 0.650 1.0\n")
                 elif a in ["p"]:
-                    lines.append("        d 1\n        1 0.550 1.0\n\n")
+                    lines.append("       d 1\n       1 0.550 1.0\n")
                 elif a in ["ca"]:
-                    lines.append("        d 1\n        1 0.200 1.0\n\n")                
+                    lines.append("       d 1\n       1 0.200 1.0\n")
             else:
                 print(f"basis sets({self.basissets}) is not implemented yet")
                 exit()
