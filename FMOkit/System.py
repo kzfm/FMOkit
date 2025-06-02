@@ -247,7 +247,7 @@ class System:
             elif self.basissets == "6-31G":
                 lines.append("       n31 6\n")
             elif self.basissets.startswith("6-31G*"): # 6-31G* or 6-31G**
-                lines.append("       n31 6\n")                
+                lines.append("       n31 6")                
                 if a in ["h"]:
                     if self.basissets == "6-31G**":
                         lines.append("       d 1\n       1 1.100 1.0\n")
