@@ -201,14 +201,16 @@ class System:
         ligands = []
         lines = [" $fmobnd"]
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
-            if (
-                frg1.asym_id == frg2.asym_id and
-                frg2.seq_id - frg1.seq_id == 1
-            ):
-                if frg1.comp_id in AAs and frg2.comp_id in AAs:
+            if frg1.asym_id == frg2.asym_id:
+                if (
+                    frg1.comp_id in AAs and
+                    frg2.comp_id in AAs and
+                    1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
+                    ):
                     ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
                     lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
                 elif frg1.comp_id in NTs and frg2.comp_id in NTs:
+                    # Todo: check for phosphodiester bond
                     c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
                     lines.append(f"{-c1_atom.id:>8d}{c2_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
     
@@ -298,9 +300,9 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if (
                 frg1.asym_id == frg2.asym_id and
-                frg2.seq_id - frg1.seq_id == 1 and 
                 frg1.comp_id in AAs and
-                frg2.comp_id in AAs
+                frg2.comp_id in AAs and
+                1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
             ):
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("C")))
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("O")))
