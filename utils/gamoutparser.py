@@ -47,12 +47,20 @@ def parse_gamout(gamout, output):
 
         for m in pieda_re.finditer(gamout_str):
             for l in m.group(1).split("\n"):
-                I, J, DL, Z, R, QIJ, EIJ, dDIJVIJ, total, Ees, Eex, Ectmix, Edisp, Gsol = l.split()
-                I, J = int(I), int(J)
-                components = [("ES",  Ees), ("EX", Eex), ("CT", Ectmix), ("DI", Edisp), ("SOL", Gsol)]
+                fields = {
+                    'I': l[:5], 'J': l[5:10], 'DL': l[10:13], 'Z': l[13:16],
+                    'R': l[16:23], 'QIJ': l[23:31], 'EIJ': l[31:41], 'dDIJVIJ': l[41:50],
+                    'total': l[50:60], 'Ees': l[60:70], 'Eex': l[70:79],
+                    'Ectmix': l[79:88], 'Edisp': l[88:97], 'Gsol': l[97:106]
+                }
+
+                I, J = int(fields['I']), int(fields['J'])
+                components = [("ES", fields['Ees']), ("EX", fields['Eex']), ("CT", fields['Ectmix']),
+                              ("DI", fields['Edisp']), ("SOL", fields['Gsol'])]
+
                 for tag, energy in components:
                     for a, b in [(I, J), (J, I)]:
-                        writer.writerow([str(a), frgs[a], str(b), frgs[b], tag, energy, total])           
+                        writer.writerow([str(a), frgs[a], str(b), frgs[b], tag, energy, fields['total']])   
           
 if __name__ == "__main__":
     cli()
