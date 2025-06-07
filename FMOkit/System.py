@@ -315,12 +315,14 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if (
                 frg1.asym_id == frg2.asym_id and
-                frg2.seq_id - frg1.seq_id == 1 and 
                 frg1.comp_id in NTs and
-                frg2.comp_id in NTs
+                frg2.comp_id in NTs and
+                1.6 < atom_dist(frg1.find_atom("O3'"), frg2.find_atom("P")) < 1.8
             ):
-                for atom_id in ["P", "OP1", "OP2", "O5'", "C5'", "H5'", "H5''"]:
-                    frg1.atoms.append(frg2.atoms.pop(frg2.find_atom_index(atom_id)))
+                for atom_id in ["P", "OP1", "OP2", "O5'", "C5'", "H5'", "H5'1", "H5''", "H5'2"]:
+                    ai =  frg2.find_atom_index(atom_id)
+                    if ai is not None:
+                        frg1.atoms.append(frg2.atoms.pop(ai))
 
     def process_cys(self):
         """
