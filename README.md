@@ -50,7 +50,7 @@ Optionally, you can specify GAMESS computational resources such as the number of
 The system is automatically divided into fragments based on residue IDs.
 Each fragment’s formal charge is computed by summing the partial charges of the atoms it contains, so partial charge information is required.
 
-> **Note:**  
+> **Note:**
 > If you are converting a CIF file exported from **Maestro**, there are two important points to keep in mind:  
 > 1. Atomic charge information is stored in the `pdbx_formal_charge` attribute.  
 > 2. The chain ID corresponds to `auth_asym_id` instead of `label_asym_id`.
