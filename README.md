@@ -58,7 +58,7 @@ Each fragment’s formal charge is computed by summing the partial charges of th
 > Therefore, you need to specify the following two options explicitly:
 > 
 > ```bash
-> mmcif2fmoinp INPUT –asym_id=auth_asym_id –charge=pdbx_formal_charge
+> mmcif2fmoinp INPUT -–asym_id=auth_asym_id -–charge=pdbx_formal_charge
 > ```
 > 
 > Alternatively, you can use the predefined shortcut option:
