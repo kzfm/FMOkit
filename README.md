@@ -35,6 +35,10 @@ mmcifprep INPUT_FILE LIGAND_ID SMILES_STRING
 
 As this is the most important step, we recommend referring to [the accompanying Jupyter notebook](https://github.com/kzfm/FMOkit/blob/main/examples/prepare_complex-5law.ipynb), which demonstrates the process interactively and step by step.
 
+> **Note:**
+> If you are using molecular modeling tools such as Maestro or MOE, you can skip this step.
+> Instead of using mmcifprep, please perform preprocessing steps such as hydrogen addition within those tools and export the structure as an  mmCIF format file.
+
 ### 2. Generate GAMESS input files
 
 ```bash
@@ -45,6 +49,24 @@ Generates a GAMESS input file for FMO calculations from a preprocessed mmCIF fil
 Optionally, you can specify GAMESS computational resources such as the number of nodes, CPU cores, and memory size.
 The system is automatically divided into fragments based on residue IDs.
 Each fragment’s formal charge is computed by summing the partial charges of the atoms it contains, so partial charge information is required.
+
+> **Note**  
+> If you are converting a CIF file exported from **Maestro**, there are two important points to keep in mind:  
+> 1. Atomic charge information is stored in the `pdbx_formal_charge` attribute.  
+> 2. The chain ID corresponds to `auth_asym_id` instead of `label_asym_id`.
+> 
+> Therefore, you need to specify the following two options explicitly:
+> 
+> ```bash
+> mmcif2fmoinp INPUT –asym_id=auth_asym_id –charge=pdbx_formal_charge
+> ```
+> 
+> Alternatively, you can use the predefined shortcut option:
+> 
+> ```bash
+> mmcif2fmoinp -M INPUT
+> ```
+
 
 ### 3. Extract results into a CSV/TSV file
 
