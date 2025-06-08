@@ -77,7 +77,9 @@ class System:
 
         table = block.find("_atom_site.", ["id", "type_symbol", "label_atom_id", "Cartn_x",
              "Cartn_y", "Cartn_z", self.charge, "label_comp_id", self.asym_id, "label_seq_id"])
-
+        if table.width() == 0:
+            raise ValueError(f"The specified column is not valid in {structure_file}")
+        
         fragment_dict = {}
         for row in table:
             atom = Atom(

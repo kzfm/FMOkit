@@ -28,7 +28,12 @@ def cli(input, output, nodes, cores, memory, basissets, charge, asym_id, maestro
         s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge="pdbx_formal_charge", asym_id="auth_asym_id")
     else:
         s = System(nodes=nodes, cores=cores, memory=memory, basissets=basissets, charge=charge, asym_id=asym_id)
-    s.read_file(input)
+    try:
+        s.read_file(input)
+    except ValueError as e:
+        print(f"Error reading input file: {e}")
+        exit(1)
+    
     s.prepare_fragments()
     with open(output, "w") as f:
         f.write(s.print_fmoinput())
