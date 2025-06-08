@@ -52,6 +52,7 @@ class System:
         self.cached_fmobnd: str = ""
         self.charge: str = kwargs["charge"]
         self.asym_id: str = kwargs["asym_id"]
+        self.pcm: bool = kwargs.get("pcm", False)
 
     def read_file(self, structure_file: str):
         """
@@ -112,10 +113,15 @@ class System:
         Generate the header for the system.
         :return: The header string.
         """
-        return f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
+        header = f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
  $system mwords={int(self.memory / (self.cores * 8))} memddi=0 $end
  $gddi ngroup={self.nodes} $end
  $scf dirscf=.t. npunch=0 $end"""
+        if self.pcm:
+            header += """\n $pcm solvnt=WATER icomp=2 icav=1 idisp=1 ifmo=-1 mxts=1000000 $end
+ $pcmcav radii=vandw $end
+ $tescav ntsall=60 mthall=2 $end"""
+        return header
 
     @property
     def fmoprp(self):
