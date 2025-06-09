@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='FMOkit',
-    version='0.1',
+    version='0.2.0',
     py_modules=['FMOkit'],
     install_requires=[
         'click',
