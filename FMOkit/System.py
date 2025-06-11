@@ -299,6 +299,8 @@ class System:
         self.process_peptide_bond()
         self.process_phosphodiester_bond()
         self.process_cys()
+        self.process_nterminal()
+        self.process_cterminal()
 
     def process_peptide_bond(self):
         """
@@ -339,6 +341,28 @@ class System:
         cys_pairs =self.search_disulfied_bonds()
         for cysname1, cysname2 in cys_pairs:
             self.merge_fragments(cysname1, cysname2)
+    
+    def process_nterminal(self):
+        """
+        Process the N-terminal of the system.
+        This method modifies the fragments by moving the N-terminal atom to the first fragment.
+        """
+        for frg in self.fragments:
+            if frg.comp_id == "ACE":
+                nfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id+1)
+                if nfrg is not None:
+                    self.merge_fragments(nfrg.fragment_name, frg.fragment_name)
+
+    def process_cterminal(self):
+        """
+        Process the C-terminal of the system.
+        This method modifies the fragments by moving the C-terminal atom to the last fragment.
+        """
+        for frg in self.fragments:
+            if frg.comp_id == "NME":
+                cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id)
+                if cfrg is not None:
+                    self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
 
     def merge_fragments(self, frgnam1, frgnam2):
         """
@@ -360,6 +384,18 @@ class System:
         for i, fragment in enumerate(self.fragments):
             if fragment.fragment_name == fragment_name:
                 return i
+        return None
+
+    def find_fragment_by_seqid(self, asym_id, seq_id):
+        """
+        Find a fragment by its asym_id and seq_id.
+        :param asym_id: The asym_id of the fragment.
+        :param seq_id: The seq_id of the fragment.
+        :return: The Fragment object if found, otherwise None.
+        """
+        for fragment in self.fragments:
+            if fragment.asym_id == asym_id and fragment.seq_id == seq_id:
+                return fragment
         return None
 
     def search_disulfied_bonds(self):
