@@ -359,7 +359,7 @@ class System:
         This method modifies the fragments by moving the C-terminal atom to the last fragment.
         """
         for frg in self.fragments:
-            if frg.comp_id == "NME":
+            if frg.comp_id == "NME" or frg.comp_id == "NMA":
                 cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id)
                 if cfrg is not None:
                     self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
