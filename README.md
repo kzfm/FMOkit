@@ -90,7 +90,7 @@ Please open an issue to discuss what you’d like to change.
 
 ## Version history
 
-### 0.3 (2023/06/15)
+### 0.3 (202５/06/15)
 - Support for Maestro mae format
 - Some bug fix
 
