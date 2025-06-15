@@ -90,8 +90,9 @@ Please open an issue to discuss what you’d like to change.
 
 ## Version history
 
-### 0.3 (202５/06/15)
+### 0.3 (2025/06/15)
 - Support for Maestro mae format
+- Since mmcif2fmoinp now supports the MAE format, it has been renamed to mkfmoinp
 - Some bug fix
 
 ### 0.2 (2025/06/08)
