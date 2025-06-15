@@ -7,7 +7,7 @@ It consists of three main commands:
 - **`mmcifprep`**  
   Adds hydrogen atoms and assigns partial charges to PDB structures. It also repairs missing residues or loops to produce mmCIF files suitable for FMO calculations.
 
-- **`mmcif2fmoinp`**  
+- **`mkfmoinp`**  
   Generates GAMESS input files for FMO calculations from the mmCIF files processed by `mmcifprep`.
 
 - **`gamoutparser`**  
@@ -23,7 +23,7 @@ cd FMOkit
 pip install -e .
 ```
 
-This will register the commands mmcifprep, mmcif2fmoinp, and gamoutparser for use in your terminal.
+This will register the commands mmcifprep, mkfmoinp, and gamoutparser for use in your terminal.
 
 ## Usage
 
@@ -42,10 +42,10 @@ As this is the most important step, we recommend referring to [the accompanying 
 ### 2. Generate GAMESS input files
 
 ```bash
-mmcif2fmoinp INPUT
+mkfmoinp INPUT
 ```
 
-Generates a GAMESS input file for FMO calculations from a preprocessed mmCIF file.
+Generates a GAMESS input file for FMO calculations from a preprocessed mmCIF/mae file.
 Optionally, you can specify GAMESS computational resources such as the number of nodes, CPU cores, and memory size.
 The system is automatically divided into fragments based on residue IDs.
 Each fragment’s formal charge is computed by summing the partial charges of the atoms it contains, so partial charge information is required.
@@ -58,13 +58,13 @@ Each fragment’s formal charge is computed by summing the partial charges of th
 > Therefore, you need to specify the following two options explicitly:
 > 
 > ```bash
-> mmcif2fmoinp INPUT -–asym_id=auth_asym_id -–charge=pdbx_formal_charge
+> mkfmoinp INPUT -–asym_id=auth_asym_id -–charge=pdbx_formal_charge
 > ```
 > 
 > Alternatively, you can use the predefined shortcut option:
 > 
 > ```bash
-> mmcif2fmoinp -M INPUT
+> mkfmoinp -M INPUT
 > ```
 
 
@@ -89,7 +89,11 @@ Please open an issue to discuss what you’d like to change.
 
 ## Version history
 
-### 0.2 (2025/06/8)
+### 0.3 (2023/06/15)
+- Support for Maestro mae format
+- Some bug fix
+
+### 0.2 (2025/06/08)
 - Support for DNA/RNA Fragmentation
 - Support for Maestro mmCIF file
 - Some bug fix

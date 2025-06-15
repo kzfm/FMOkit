@@ -2,6 +2,7 @@ import gemmi
 from .Fragment import Fragment
 from .Atom import Atom
 from .hyb_carbon import hybrid_orbitals
+from .maeparser import maeparse
 from math import dist
 
 ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
@@ -61,6 +62,8 @@ class System:
         """
         if structure_file.endswith(".cif"):
             self.from_cif(structure_file)
+        elif structure_file.endswith(".mae"):
+            self.from_mae(structure_file)
         elif structure_file.endswith(".pdb"):
             print("pdb format is not supported")
             raise NotImplementedError("Only cif format is supported at the moment.")
@@ -68,6 +71,38 @@ class System:
             print("not implemented yet")
             raise NotImplementedError("Only cif format is supported at the moment.")
     
+    def from_mae(self, structure_file: str):
+        """
+        Read a Maestro file and populate the fragments.
+        :param structure_file: The path to the Maestro file.
+        """
+        table = maeparse(structure_file)
+        
+        fragment_dict = {}
+        for row in table:
+            atom = Atom(
+                id=int(row[0]),
+                type_symbol=row[1],
+                atom_id=row[2],
+                x=float(row[3]),
+                y=float(row[4]),
+                z=float(row[5]),
+                charge=float(row[6])
+            )
+            
+            comp_id = row[7]
+            asym_id = row[8]
+            seq_id = int(row[9])
+
+            fragment_key = (comp_id, asym_id, seq_id)
+            if fragment_key not in fragment_dict:
+                fragment = Fragment(comp_id=comp_id, asym_id=asym_id, seq_id=seq_id)
+                fragment_dict[fragment_key] = fragment
+                self.fragments.append(fragment)
+            else:
+                fragment = fragment_dict[fragment_key]
+
+            fragment.atoms.append(atom)
     def from_cif(self, structure_file: str):
         """
         Read a CIF file and populate the fragments.
