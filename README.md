@@ -9,6 +9,7 @@ It consists of three main commands:
 
 - **`mkfmoinp`**  
   Generates GAMESS input files for FMO calculations from the mmCIF files processed by `mmcifprep`.
+  Alternatively, you can generate a GAMESS FMO input file from an MAE file processed with Maestro’s Protein Preparation tool.
 
 - **`gamoutparser`**  
   Processes GAMESS output files and extracts data into analysis-ready CSV/TSV format.
