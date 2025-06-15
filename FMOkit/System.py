@@ -81,18 +81,18 @@ class System:
         fragment_dict = {}
         for row in table:
             atom = Atom(
-                id=int(row[0]),
+                id=row[0],
                 type_symbol=row[1],
                 atom_id=row[2],
-                x=float(row[3]),
-                y=float(row[4]),
-                z=float(row[5]),
-                charge=float(row[6])
+                x=row[3],
+                y=row[4],
+                z=row[5],
+                charge=row[6]
             )
             
             comp_id = row[7]
             asym_id = row[8]
-            seq_id = int(row[9])
+            seq_id = row[9]
 
             fragment_key = (comp_id, asym_id, seq_id)
             if fragment_key not in fragment_dict:
@@ -103,6 +103,7 @@ class System:
                 fragment = fragment_dict[fragment_key]
 
             fragment.atoms.append(atom)
+    
     def from_cif(self, structure_file: str):
         """
         Read a CIF file and populate the fragments.
