@@ -12,21 +12,23 @@ def maeparse(maefile):
     """
     Parses a MAE file and returns a list of atom records as lists.
     """
-    pattern = re.compile(r"m_atom\[(\d+)\].{0,70}{\n(.*?)\n:::\n}", re.DOTALL)
+    pattern = re.compile(r"m_atom\[(\d+)\].{0,70}{ {0,5}\n(.*?)\n {0,5}:::\n {0,5}}", re.DOTALL)
+
     field_map = {
         "atomic_number": "anum", "pdb_atom_name": "aid",
-        "x_coord": "x", "y_coord": "y", "z_coord": "z",
+        "m_x_coord": "x", "m_y_coord": "y", "m_z_coord": "z",
         "charge1": "charge", "pdb_residue_name": "compid",
         "chain_name": "asymid", "residue_number": "seqid"
     }
-
+ 
     with open(maefile, "r") as f:
         content = f.read()
 
     table = []
     for match in pattern.finditer(content):
         atom_num = int(match.group(1))
-        header, data = match.group(2).split("\n:::\n", 1)
+        header, data = match.group(2).split(":::", 1)
+        header = header.strip()
         headers = header.split("\n")
         hdict = {v: i for i, h in enumerate(headers) for k, v in field_map.items() if h.endswith(k)}
         lines = data.strip().split("\n")
