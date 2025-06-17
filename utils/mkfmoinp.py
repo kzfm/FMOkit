@@ -16,7 +16,7 @@ import click
 @click.option("--nodes", "-n", default=1, help="num of nodes")
 @click.option("--cores", "-c", default=8, help="num of cores")
 @click.option("--memory", "-m", default=14000, help="memory in MB")
-@click.option("--basissets", "-b", default="6-31G", help="Basis Sets")
+@click.option("--basissets", "-b", default="6-31G*", help="Basis Sets")
 @click.option("--charge", "-C", default="partial_charge", help="Charge Selection: Partial / Formal")
 @click.option("--asym_id", "-A", default="label_asym_id", help="Asym ID Selection: label_asym_id / auth_asym_id")
 @click.option("--maestro_cif",  "-M", is_flag=True, help="Use Maestro CIF format (default: mmCIF)")
