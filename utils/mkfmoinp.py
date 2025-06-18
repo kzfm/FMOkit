@@ -12,7 +12,7 @@ import click
 
 @click.command(help="FMO input generator for GAMESS")
 @click.argument("input")
-@click.option("--output", "-o", default="fmo.inp", help="FMO inputfile name")
+@click.option("--output", "-o", default="[basename].inp", help="FMO inputfile name")
 @click.option("--nodes", "-n", default=1, help="num of nodes")
 @click.option("--cores", "-c", default=8, help="num of cores")
 @click.option("--memory", "-m", default=14000, help="memory in MB")
@@ -36,6 +36,9 @@ def cli(input, output, nodes, cores, memory, basissets, charge, asym_id, maestro
         exit(1)
     
     s.prepare_fragments()
+    if output.startswith("[basename]"):
+        basename, suffix = input.rsplit(".", 1)
+        output = f"{basename}.inp"
     with open(output, "w") as f:
         f.write(s.print_fmoinput())
           

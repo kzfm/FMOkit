@@ -13,7 +13,7 @@ import click
 
 @click.command(help="gamout parser")
 @click.argument("gamout")
-@click.option("--output", "-o", default="pieda.csv", help="Output file name")
+@click.option("--output", "-o", default="[basename]_pieda.csv", help="Output file name")
 def cli(gamout, output):
     """
     Command line interface for the script.
@@ -26,7 +26,11 @@ def parse_gamout(gamout, output):
     :param gamout: The GAMESS output file.
     :param output: The output file name.
     """
-    fname, suffix = output.rsplit(".")
+    if output.startswith("[basename]"):
+        basename, suffix = gamout.rsplit(".", 1)
+        output = f"{basename}_pieda.csv"
+    else:
+        basename, suffix = output.rsplit(".")
     # Regular expressions to match the relevant sections in the GAMESS output
     fragment_re = re.compile("CONV\n ={70,90}\n(.*?)\n\n Close fragment pairs", re.DOTALL)
     pieda_re = re.compile(" -{105}\n(.*?)\n\n Total energy", re.DOTALL)
