@@ -14,13 +14,20 @@ import click
 @click.command(help="gamout parser")
 @click.argument("gamout")
 @click.option("--output", "-o", default="[basename]_pieda.csv", help="Output file name")
-def cli(gamout, output):
+@click.option("--convert",  "-c", is_flag=True, help="If True, PCM convert frgname (default: False)")
+def cli(gamout, output, convert):
     """
     Command line interface for the script.
     """
-    parse_gamout(gamout, output)
+    parse_gamout(gamout, output, convert)
 
-def parse_gamout(gamout, output):
+def convert_frgname(frgname):
+    asym_id = frgname[-1:]
+    seq_id = frgname[-5:-1]
+    comp_id = frgname[:-5]
+    return f"{asym_id}:{seq_id}{comp_id}"
+
+def parse_gamout(gamout, output, convert):
     """
     Parse the GAMESS output file and extract fragment information and two-body properties.
     :param gamout: The GAMESS output file.
@@ -47,7 +54,10 @@ def parse_gamout(gamout, output):
         for m in fragment_re.finditer(gamout_str):
             for l in (m.group(1).split("\n")):
                 els = l.split()
-                frgs[int(els[0])] = els[1]
+                if convert:
+                    frgs[int(els[0])] = convert_frgname(els[1])
+                else:
+                    frgs[int(els[0])] = els[1]
 
         for m in pieda_re.finditer(gamout_str):
             for l in m.group(1).split("\n"):
