@@ -1,0 +1,5 @@
+AminoAcids = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
+        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
+        "HIE", "HID", "HIP", "LYN", "ASH", "GLH"]
+
+ Nucleotides = ["DA", "DG", "DC", "DT", "A", "G", "C", "U"]

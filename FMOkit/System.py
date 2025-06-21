@@ -4,15 +4,10 @@ from .Atom import Atom
 from .hyb_carbon import hybrid_orbitals
 from .maeparser import maeparse
 from math import dist
+import tomllib
 
 ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
            "f": 9, "p": 15, "cl": 17}
-
-AAs = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
-        "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
-        "HIE", "HID", "HIP", "LYN", "ASH", "GLH"]
-
-NTs = ["DA", "DG", "DC", "DT", "A", "G", "C", "U"]
 
 def coef_format(coef):
     """
@@ -54,6 +49,13 @@ class System:
         self.charge: str = kwargs["charge"]
         self.asym_id: str = kwargs["asym_id"]
         self.pcm: bool = kwargs.get("pcm", False)
+        self.config: str = kwargs["toml"]
+
+        
+        with open(self.config, "rb") as f:
+            config = tomllib.load(f)
+        self.AAs = config["AminoAcids"]
+        self.NTs = config["Nucleotides"]
 
     def read_file(self, structure_file: str):
         """
@@ -247,19 +249,19 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if frg1.asym_id == frg2.asym_id:
                 if (
-                    frg1.comp_id in AAs and
-                    frg2.comp_id in AAs and
+                    frg1.comp_id in self.AAs and
+                    frg2.comp_id in self.AAs and
                     1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
                     ):
                     ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
                     lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
-                elif frg1.comp_id in NTs and frg2.comp_id in NTs:
+                elif frg1.comp_id in self.NTs and frg2.comp_id in self.NTs:
                     # Todo: check for phosphodiester bond
                     c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
                     lines.append(f"{-c1_atom.id:>8d}{c2_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
     
             # check for ligand interactions
-            if frg2.comp_id not in AAs and frg2.comp_id not in NTs:
+            if frg2.comp_id not in self.AAs and frg2.comp_id not in self.NTs:
                 ligands.append(frg2)
 
         # check for ligand-ligand interactions
@@ -346,8 +348,8 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if (
                 frg1.asym_id == frg2.asym_id and
-                frg1.comp_id in AAs and
-                frg2.comp_id in AAs and
+                frg1.comp_id in self.AAs and
+                frg2.comp_id in self.AAs and
                 1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
             ):
                 frg2.atoms.append(frg1.atoms.pop(frg1.find_atom_index("C")))
@@ -361,8 +363,8 @@ class System:
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if (
                 frg1.asym_id == frg2.asym_id and
-                frg1.comp_id in NTs and
-                frg2.comp_id in NTs and
+                frg1.comp_id in self.NTs and
+                frg2.comp_id in self.NTs and
                 1.6 < atom_dist(frg1.find_atom("O3'"), frg2.find_atom("P")) < 1.8
             ):
                 for atom_id in ["P", "OP1", "OP2", "O5'", "C5'", "H5'", "H5'1", "H5''", "H5'2"]:
