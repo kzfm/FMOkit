@@ -70,10 +70,13 @@ def parse_gamout(gamout, output, convert):
 
                 I, J = int(fields['I']), int(fields['J'])
                 components = [("ES", fields['Ees']), ("EX", fields['Eex']), ("CT", fields['Ectmix']),
-                              ("DI", fields['Edisp']), ("SOL", fields['Gsol'])]
+                              ("DI", fields['Edisp']), ("SOL", fields['Gsol']), ("R", fields['R']),
+                              ("Q", fields['QIJ'])]
 
                 for tag, energy in components:
-                    for a, b in [(I, J), (J, I)]:
+                    for i, (a, b) in enumerate([(I, J), (J, I)]):
+                        if i == 1 and tag == "Q":
+                            energy = float(energy) * -1  # Reverse sign for QIJ 
                         writer.writerow([str(a), frgs[a], str(b), frgs[b], tag, energy, fields['total']])   
           
 if __name__ == "__main__":
