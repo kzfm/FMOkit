@@ -1,7 +1,7 @@
 # FMOkit: A Python toolkit for the preparation and analysis of FMO calculations
 
 ## Introduction
-**FMOkit** is a command-line toolkit written in Python for both preprocessing and postprocessing of FMO (Fragment Molecular Orbital) calculations.  
+**FMOkit** is a command-line toolkit written in Python for both preprocessing and postprocessing of Fragment Molecular Orbital(FMO) calculations.  
 It consists of three main commands:
 
 - **`mmcifprep`**  
