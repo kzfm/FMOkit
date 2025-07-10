@@ -47,7 +47,7 @@ def parse_gamout(gamout, output, convert):
             writer = csv.writer(f, delimiter="\t")
         else:
             writer = csv.writer(f)
-        writer.writerow(["I", "IFRG", "J", "JFRG", "COMPONENT", "ENERGY", "TOTAL"])
+        writer.writerow(["I", "IFRG", "J", "JFRG", "R", "Q", "COMPONENT", "ENERGY", "TOTAL"])
         frgs = {}
         gamout_str = open(gamout, "r").read()
 
@@ -75,9 +75,11 @@ def parse_gamout(gamout, output, convert):
 
                 for tag, energy in components:
                     for i, (a, b) in enumerate([(I, J), (J, I)]):
-                        if i == 1 and tag == "Q":
-                            energy = float(energy) * -1  # Reverse sign for QIJ 
-                        writer.writerow([str(a), frgs[a], str(b), frgs[b], tag, energy, fields['total']])   
+                        if i == 1:
+                            qij = -1 * float(fields['QIJ'])
+                        else:
+                            qij = float(fields['QIJ'])
+                        writer.writerow([str(a), frgs[a], str(b), frgs[b], float(fields['R']), qij, tag, energy.strip(), fields['total'].strip()])  
           
 if __name__ == "__main__":
     cli()
