@@ -49,6 +49,7 @@ class System:
         self.charge: str = kwargs["charge"]
         self.asym_id: str = kwargs["asym_id"]
         self.pcm: bool = kwargs.get("pcm", False)
+        self.runtyp: str = kwargs.get("runtyp", "energy")  # default run type
         self.config: str = kwargs["toml"]
 
         
@@ -151,14 +152,32 @@ class System:
         Generate the header for the system.
         :return: The header string.
         """
-        header = f""" $contrl runtyp=energy nprint=-5 maxit=200 $end
+        if self.runtyp == "energy":
+            header = f""" $contrl runtyp={self.runtyp} nprint=-5 maxit=200 $end
  $system mwords={int(self.memory / (self.cores * 8))} memddi=0 $end
  $gddi ngroup={self.nodes} $end
  $scf dirscf=.t. npunch=0 $end"""
-        if self.pcm:
-            header += """\n $pcm solvnt=WATER icomp=2 icav=1 idisp=1 ifmo=-1 mxts=1000000 $end
+            if self.pcm:
+                header += """\n $pcm solvnt=WATER icomp=2 icav=1 idisp=1 ifmo=-1 mxts=1000000 $end
  $pcmcav radii=vandw $end
  $tescav ntsall=60 mthall=2 $end"""
+        elif self.runtyp == "optfmo":
+            header = f""" $contrl runtyp=optfmo nprint=-5 ispher=-1 maxit=200 $end
+ $system mwords={self.memory} $end
+ $gddi ngroup={self.nodes} $end
+ $scf dirscf=.true. npunch=0 $end
+ $basis gbasis={self.basissets} $end
+ $dftb
+   scc=.true. dftb3=.true. dampxh=.true. dampex=4.00
+   param=3ob-3-1
+ $end
+ $optfmo
+         method=hssupd nstep=2000 opttol=1e-4
+ $end
+ $pcm solvnt=water ief=-10 icomp=0 icav=1 idisp=1 modpar=65 ifmo=-1 $end
+ $pcmcav radii=suahf $end
+ $tescav ntsall=60 $end"""
+
         return header
 
     @property
@@ -167,13 +186,23 @@ class System:
         Generate the FMO property string.
         :return: The FMO property string.
         """
-        return f""" $fmoprp
+        if self.runtyp == "energy":
+            fmoprp = f""" $fmoprp
    ngrfmo(1)={self.nodes},{self.nodes},0,0,0,  0,0,0,0,0
    ipieda=1
    naodir=220
    nprint=9
    maxit=100
  $end"""
+        elif self.runtyp == "optfmo":
+            fmoprp = f""" $fmoprp
+    modpar=8205
+    naodir=210
+    ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
+    nprint=9
+ $end"""
+
+        return fmoprp
 
     @property
     def icharge(self):
@@ -211,32 +240,56 @@ class System:
         Generate the FMO section string.
         :return: The FMO section string.
         """
-        return (
-            f" $fmo\n"
-            f"      nlayer=1\n"
-            f"      mplevl(1)=2\n"
-            f"      nfrag={len(self.fragments)}\n"
-            f"{self.icharge}"
-            f"{self.fmofragnam}"
-            f"{self.indat}"
-            f" $end"
-            )
-    
+        if self.runtyp == "energy":
+            fmo_str = (
+                f" $fmo\n"
+                f"      nlayer=1\n"
+                f"      mplevl(1)=2\n"
+                f"      nfrag={len(self.fragments)}\n"
+                f"{self.icharge}"
+                f"{self.fmofragnam}"
+                f"{self.indat}"
+                f" $end"
+                )
+        elif self.runtyp == "optfmo":
+            fmo_str = (
+                f" $fmo\n"
+                f"      scftyp(1)=rhf\n"
+                f"      modgrd=42 modesp=0\n"
+                f"      nlayer=1\n"
+                f"      nfrag={len(self.fragments)}\n"
+                f"{self.icharge}"
+                f"{self.fmofragnam}"
+                f"{self.indat}"
+                f" $end"
+                )
+        return fmo_str
+
     @property
     def fmohyb(self):
         """
         Generate the FMO hybrid orbital.
         :return: The FMO hybrid orbitarl string.
         """
-        if self.basissets   not in hybrid_orbitals:
-            raise ValueError(f"Basis sets {self.basissets} is not supported.")
+        if self.basissets == "dftb":
+            fmohyb = """ $fmolmo
+ dftb-c 4 4
+   1 0  0.558756  0.000000  0.000000  0.829332
+   0 1  0.558757  0.781901  0.000000 -0.276445
+   0 1  0.558756 -0.390951  0.677146 -0.276445
+   0 1  0.558756 -0.390951 -0.677146 -0.276445
+ $end"""
         else:
-            return f""" $fmohyb
+            if self.basissets   not in hybrid_orbitals:
+                raise ValueError(f"Basis sets {self.basissets} is not supported.")
+            else:
+                fmohyb = f""" $fmohyb
   {hybrid_orbitals[self.basissets]["name"]:<10}{hybrid_orbitals[self.basissets]["bda"]:>4}{hybrid_orbitals[self.basissets]["baa"]:>4}
 {coef_format(hybrid_orbitals[self.basissets]["coef"])}
   {hybrid_orbitals["MINI"]["name"]:<10}{hybrid_orbitals["MINI"]["bda"]:>4}{hybrid_orbitals["MINI"]["baa"]:>4}
 {coef_format(hybrid_orbitals["MINI"]["coef"])}
  $end"""
+        return fmohyb
 
     @property
     def fmobnd(self):
@@ -254,11 +307,17 @@ class System:
                     1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
                     ):
                     ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
-                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                    if self.basissets == "dftb":
+                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                    else:
+                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
                 elif frg1.comp_id in self.NTs and frg2.comp_id in self.NTs:
                     # Todo: check for phosphodiester bond
                     c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
-                    lines.append(f"{-c1_atom.id:>8d}{c2_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                    if self.basissets == "dftb":
+                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                    else:
+                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
     
             # check for ligand interactions
             if frg2.comp_id not in self.AAs and frg2.comp_id not in self.NTs:
@@ -271,7 +330,10 @@ class System:
                     for lig1_c in [lig1_atom for lig1_atom in lig1.atoms if lig1_atom.type_symbol == "C"]:
                         for lig2_c in [lig2_atom for lig2_atom in lig2.atoms if lig2_atom.type_symbol == "C"]:
                             if 1.4 < atom_dist(lig1_c, lig2_c) < 1.6:
-                                lines.append(f"{-lig1_c.id:>8d}{lig2_c.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                                if self.basissets == "dftb":
+                                    lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                                else:
+                                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
         return '\n'.join(lines) + "\n $end"
     
     @property
@@ -283,37 +345,44 @@ class System:
         atoms = [atom.type_symbol.lower() for fragment in self.fragments for atom in fragment.atoms]
         atoms = list(set(atoms))
         lines = [f" $data\n {self.title}\n C1"]
-        for a in atoms:
-            if not a in ANUMBERS:
-                print(f"{a} is not in fmodata")
-                exit()
-            
-            lines.append(f" {a}.1-1  {ANUMBERS[a]:>4}")
+        if self.basissets == "dftb":
+            for a in atoms:
+                if not a in ANUMBERS:
+                    print(f"{a} is not in fmodata")
+                    exit()                
+                lines.append(f" {a}{ANUMBERS[a]:>5}")
+        else:
+            for a in atoms:
+                if not a in ANUMBERS:
+                    print(f"{a} is not in fmodata")
+                    exit()
+                
+                lines.append(f" {a}.1-1  {ANUMBERS[a]:>4}")
 
-            if self.basissets == "STO-3G":
-                lines.append("       sto 3\n")
-            elif self.basissets == "6-31G":
-                lines.append("       n31 6\n")
-            elif self.basissets.startswith("6-31G*"): # 6-31G* or 6-31G**
-                lines.append("       n31 6")                
-                if a in ["h"]:
-                    if self.basissets == "6-31G**":
-                        lines.append("       d 1\n       1 1.100 1.0\n")
-                    else:
-                        lines.append("")
-                elif a in ["c", "n", "o", "f"]:
-                    lines.append("       d 1\n       1 0.800 1.0\n")
-                elif a in ["cl"]:
-                    lines.append("       d 1\n       1 0.750 1.0\n")
-                elif a in ["s"]:
-                    lines.append("       d 1\n       1 0.650 1.0\n")
-                elif a in ["p"]:
-                    lines.append("       d 1\n       1 0.550 1.0\n")
-                elif a in ["ca"]:
-                    lines.append("       d 1\n       1 0.200 1.0\n")
-            else:
-                print(f"basis sets({self.basissets}) is not implemented yet")
-                exit()
+                if self.basissets == "STO-3G":
+                    lines.append("       sto 3\n")
+                elif self.basissets == "6-31G":
+                    lines.append("       n31 6\n")
+                elif self.basissets.startswith("6-31G*"): # 6-31G* or 6-31G**
+                    lines.append("       n31 6")                
+                    if a in ["h"]:
+                        if self.basissets == "6-31G**":
+                            lines.append("       d 1\n       1 1.100 1.0\n")
+                        else:
+                            lines.append("")
+                    elif a in ["c", "n", "o", "f"]:
+                        lines.append("       d 1\n       1 0.800 1.0\n")
+                    elif a in ["cl"]:
+                        lines.append("       d 1\n       1 0.750 1.0\n")
+                    elif a in ["s"]:
+                        lines.append("       d 1\n       1 0.650 1.0\n")
+                    elif a in ["p"]:
+                        lines.append("       d 1\n       1 0.550 1.0\n")
+                    elif a in ["ca"]:
+                        lines.append("       d 1\n       1 0.200 1.0\n")
+                else:
+                    print(f"basis sets({self.basissets}) is not implemented yet")
+                    exit()
         lines.append(" $end\n")
         return "\n".join(lines).rstrip('\n')
 

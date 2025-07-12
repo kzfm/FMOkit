@@ -19,6 +19,7 @@ setup(
         [console_scripts]
         mmcifprep=utils.mmcifprep:cli
         mkfmoinp=utils.mkfmoinp:cli
+        mkfmodftbinp=utils.mkfmodftbinp:cli
         gamoutparser=utils.gamoutparser:cli
     ''',
 )
