@@ -153,12 +153,27 @@ class System:
         :return: The header string.
         """
         if self.runtyp == "energy":
-            header = f""" $contrl runtyp={self.runtyp} nprint=-5 maxit=200 $end
+            if self.basissets == "dftb":
+                header = f""" $contrl runtyp={self.runtyp} nprint=-5 ispher=-1 maxit=200 $end
+ $system mwords={int(self.memory / (self.cores * 8))} $end
+ $gddi ngroup={self.nodes} $end
+ $scf dirscf=.true. npunch=0 $end
+ $basis gbasis=dftb $end
+ $dftb
+   scc=.true. dftb3=.true. dampxh=.true. dampex=4.00
+   param=3ob-3-1
+ $end
+ $dft dc=.true. idcver=3 $end
+ $pcm solvnt=water ief=-10 icomp=2 icav=1 idisp=1 modpar=73 ifmo=-1 $end
+ $pcmcav radii=suahf $end
+ $tescav ntsall=60 $end"""
+            else:
+                header = f""" $contrl runtyp={self.runtyp} nprint=-5 maxit=200 $end
  $system mwords={int(self.memory / (self.cores * 8))} memddi=0 $end
  $gddi ngroup={self.nodes} $end
  $scf dirscf=.t. npunch=0 $end"""
-            if self.pcm:
-                header += """\n $pcm solvnt=WATER icomp=2 icav=1 idisp=1 ifmo=-1 mxts=1000000 $end
+                if self.pcm:
+                    header += """\n $pcm solvnt=WATER icomp=2 icav=1 idisp=1 ifmo=-1 mxts=1000000 $end
  $pcmcav radii=vandw $end
  $tescav ntsall=60 mthall=2 $end"""
         elif self.runtyp == "optfmo":
@@ -186,20 +201,21 @@ class System:
         Generate the FMO property string.
         :return: The FMO property string.
         """
-        if self.runtyp == "energy":
-            fmoprp = f""" $fmoprp
-   ngrfmo(1)={self.nodes},{self.nodes},0,0,0,  0,0,0,0,0
-   ipieda=1
-   naodir=220
-   nprint=9
-   maxit=100
- $end"""
-        elif self.runtyp == "optfmo":
+        if self.basissets == "dftb":
             fmoprp = f""" $fmoprp
     modpar=8205
     naodir=210
     ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
+    ipieda=1
     nprint=9
+ $end"""                
+        else:
+            fmoprp = f""" $fmoprp
+    ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
+    ipieda=1
+    naodir=220
+    nprint=9
+    maxit=100
  $end"""
 
         return fmoprp
@@ -241,7 +257,23 @@ class System:
         :return: The FMO section string.
         """
         if self.runtyp == "energy":
-            fmo_str = (
+            if self.basissets == "dftb":
+                fmo_str = (
+                f" $fmo\n"
+                f"      scftyp(1)=rhf\n"
+                f"      modgrd=10\n"
+                f"      modmul=0\n"
+                f"      maxcao=5\n"
+                f"      maxbnd=10\n"
+                f"      nlayer=1\n"
+                f"      nfrag={len(self.fragments)}\n"
+                f"{self.icharge}"
+                f"{self.fmofragnam}"
+                f"{self.indat}"
+                f" $end"
+                )
+            else:
+                fmo_str = (
                 f" $fmo\n"
                 f"      nlayer=1\n"
                 f"      mplevl(1)=2\n"
