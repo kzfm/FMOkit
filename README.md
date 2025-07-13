@@ -7,7 +7,7 @@ It consists of three main commands:
 - **`mmcifprep`**  
   Adds hydrogen atoms and assigns partial charges to PDB structures. It also repairs missing residues or loops to produce mmCIF files suitable for FMO calculations.
 
-- **`mkfmoinp`**  
+- **`mkfmoinp/mkfmodftbinp`**  
   Generates GAMESS input files for FMO calculations from the mmCIF files processed by `mmcifprep`.
   Alternatively, you can generate a GAMESS FMO input file from an MAE file processed with Maestro’s Protein Preparation tool.
 
@@ -89,6 +89,11 @@ Pull requests and feature suggestions are welcome.
 Please open an issue to discuss what you’d like to change.
 
 ## Version history
+
+### 0.4 (2025/07/13)
+- Implemented FMO-DFTB input support via the mkfmodftbinp utility
+- Enhanced gamoutparser to output inter-fragment distance (R) and charge transfer (Q)
+- Introduced a new option in gamoutparser to rename fragment identifiers for improved readability and sorting
 
 ### 0.3 (2025/06/15)
 - Support for Maestro mae format
