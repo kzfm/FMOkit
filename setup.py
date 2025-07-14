@@ -7,6 +7,8 @@ setup(
     install_requires=[
         'click',
         'gemmi',
+        # If you are using Maestro or MOE and mmcifprep is not required, 
+        # you may safely comment out the following libraries.
         'rdkit',
         'pdbfixer',
         'mdtraj',
