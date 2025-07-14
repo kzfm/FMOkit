@@ -340,16 +340,16 @@ class System:
                     ):
                     ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
                     if self.basissets == "dftb":
-                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
                     else:
-                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
+                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
                 elif frg1.comp_id in self.NTs and frg2.comp_id in self.NTs:
                     # Todo: check for phosphodiester bond
                     c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
                     if self.basissets == "dftb":
-                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
                     else:
-                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
+                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
     
             # check for ligand interactions
             if frg2.comp_id not in self.AAs and frg2.comp_id not in self.NTs:
@@ -363,9 +363,9 @@ class System:
                         for lig2_c in [lig2_atom for lig2_atom in lig2.atoms if lig2_atom.type_symbol == "C"]:
                             if 1.4 < atom_dist(lig1_c, lig2_c) < 1.6:
                                 if self.basissets == "dftb":
-                                    lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {"dftb-c":<10}")
+                                    lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
                                 else:
-                                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {"MINI":<10}")
+                                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
         return '\n'.join(lines) + "\n $end"
     
     @property
