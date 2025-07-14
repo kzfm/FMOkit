@@ -4,6 +4,7 @@ import sys
 from sys import argv
 import re
 import shlex
+import gzip
 
 ANUM2ATOM = {1: "H", 6: "C", 7: "N", 8: "O", 16: "S", 20: "CA",
              9: "F", 15: "P", 17: "CL"}
@@ -20,9 +21,12 @@ def maeparse(maefile):
         "charge1": "charge", "pdb_residue_name": "compid",
         "chain_name": "asymid", "residue_number": "seqid"
     }
- 
-    with open(maefile, "r") as f:
-        content = f.read()
+    if maefile.endswith("maegz"):
+        with gzip.open(maefile, "rt") as f:
+            content = f.read()
+    elif maefile.endswith("mae"):
+        with open(maefile, "r") as f:
+            content = f.read()
 
     table = []
     for match in pattern.finditer(content):

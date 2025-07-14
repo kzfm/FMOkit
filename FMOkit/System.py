@@ -65,14 +65,14 @@ class System:
         """
         if structure_file.endswith(".cif"):
             self.from_cif(structure_file)
-        elif structure_file.endswith(".mae"):
+        elif structure_file.endswith(".mae") or structure_file.endswith(".maegz"):
             self.from_mae(structure_file)
         elif structure_file.endswith(".pdb"):
             print("pdb format is not supported")
-            raise NotImplementedError("Only cif format is supported at the moment.")
+            raise NotImplementedError("Only cif/mae/maegz formats are supported at the moment.")
         else:
             print("not implemented yet")
-            raise NotImplementedError("Only cif format is supported at the moment.")
+            raise NotImplementedError("Only cif/mae/maegz formats are supported at the moment.")
     
     def from_mae(self, structure_file: str):
         """
