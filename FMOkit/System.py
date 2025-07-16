@@ -201,21 +201,29 @@ class System:
         Generate the FMO property string.
         :return: The FMO property string.
         """
-        if self.basissets == "dftb":
-            fmoprp = f""" $fmoprp
+        if self.runtyp == "energy":
+            if self.basissets == "dftb":
+                fmoprp = f""" $fmoprp
     modpar=8205
     naodir=210
     ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
     ipieda=1
     nprint=9
  $end"""                
-        else:
-            fmoprp = f""" $fmoprp
+            else:
+                fmoprp = f""" $fmoprp
     ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
     ipieda=1
     naodir=220
     nprint=9
     maxit=100
+ $end"""
+        elif self.runtyp == "optfmo":
+            fmoprp = f""" $fmoprp
+    modpar=8205
+    naodir=210
+    ngrfmo(1)={self.nodes}, {self.nodes}, 0, 0, 0,   0, 0, 0, 0, 0
+    nprint=9
  $end"""
 
         return fmoprp
