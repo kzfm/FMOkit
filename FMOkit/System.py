@@ -45,7 +45,7 @@ class System:
         self.basissets: str = kwargs["basissets"]
         self.fragments: List[Fragment] = []
         self.title: str = "Structure from PDB" # todo: add title to the structure file
-        self.cached_fmobnd: str = ""
+        self.fmobnd_list: List[(Atom, Atom)] = []
         self.charge: str = kwargs["charge"]
         self.asym_id: str = kwargs["asym_id"]
         self.pcm: bool = kwargs.get("pcm", False)
@@ -65,8 +65,10 @@ class System:
         """
         if structure_file.endswith(".cif"):
             self.from_cif(structure_file)
+            self.find_fmobnd()
         elif structure_file.endswith(".mae") or structure_file.endswith(".maegz"):
             self.from_mae(structure_file)
+            self.find_fmobnd()
         elif structure_file.endswith(".pdb"):
             print("pdb format is not supported")
             raise NotImplementedError("Only cif/mae/maegz formats are supported at the moment.")
@@ -328,14 +330,8 @@ class System:
  $end"""
         return fmohyb
 
-    @property
-    def fmobnd(self):
-        """
-        Generate the FMO bond string.
-        :return: The FMO bond string.
-        """
+    def find_fmobnd(self):
         ligands = []
-        lines = [" $fmobnd"]
         for frg1, frg2 in zip(self.fragments, self.fragments[1:]):
             if frg1.asym_id == frg2.asym_id:
                 if (
@@ -344,19 +340,13 @@ class System:
                     1.2 < atom_dist(frg1.find_atom("C"), frg2.find_atom("N")) < 1.5
                     ):
                     ca_atom, c_atom = frg1.find_atom("CA"), frg1.find_atom("C")
-                    if self.basissets == "dftb":
-                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
-                    else:
-                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                    self.fmobnd_list.append((ca_atom, c_atom))
                 elif frg1.comp_id in self.NTs and frg2.comp_id in self.NTs:
                     # Todo: check for phosphodiester bond
-                    c1_atom, c2_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
-                    if self.basissets == "dftb":
-                        lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
-                    else:
-                        lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                    cs_atom, c4_atom = frg2.find_atom("C5'"), frg2.find_atom("C4'")
+                    self.fmobnd_list.append((cs_atom, c4_atom))
     
-            # check for ligand interactions
+            # check for ligands
             if frg2.comp_id not in self.AAs and frg2.comp_id not in self.NTs:
                 ligands.append(frg2)
 
@@ -367,12 +357,23 @@ class System:
                     for lig1_c in [lig1_atom for lig1_atom in lig1.atoms if lig1_atom.type_symbol == "C"]:
                         for lig2_c in [lig2_atom for lig2_atom in lig2.atoms if lig2_atom.type_symbol == "C"]:
                             if 1.4 < atom_dist(lig1_c, lig2_c) < 1.6:
-                                if self.basissets == "dftb":
-                                    lines.append(f"{-ca_atom.id:>10d}{c_atom.id:>10d}  {'dftb-c':<10}")
-                                else:
-                                    lines.append(f"{-ca_atom.id:>8d}{c_atom.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
+                                    self.fmobnd_list.append((lig1_c, lig2_c))
+
+    @property
+    def fmobnd(self):
+        """
+        Generate the FMO bond string.
+        :return: The FMO bond string.
+        """
+        ligands = []
+        lines = [" $fmobnd"]
+        for atom1, atom2 in self.fmobnd_list:
+            if self.basissets == "dftb":
+                lines.append(f"{-atom1.id:>10d}{atom2.id:>10d}  {'dftb-c':<10}")
+            else:
+                lines.append(f"{-atom1.id:>8d}{atom2.id:>6d}  {self.basissets:<10}  {'MINI':<10}")
         return '\n'.join(lines) + "\n $end"
-    
+
     @property
     def fmodata(self):
         """
@@ -439,7 +440,6 @@ class System:
 ### process fragments
 
     def prepare_fragments(self):
-        self.cached_fmobnd = self.fmobnd # todo
         self.process_peptide_bond()
         self.process_phosphodiester_bond()
         self.process_cys()
@@ -484,7 +484,7 @@ class System:
         """
         cys_pairs =self.search_disulfied_bonds()
         for cysname1, cysname2 in cys_pairs:
-            self.merge_fragments(cysname1, cysname2)
+            self.merge_fragments(cysname1, cysname2, remove_bonds=False)
     
     def process_nterminal(self):
         """
@@ -504,11 +504,11 @@ class System:
         """
         for frg in self.fragments:
             if frg.comp_id == "NME" or frg.comp_id == "NMA":
-                cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id)
+                cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id-1) # NME/NMA is always at the end
                 if cfrg is not None:
                     self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
 
-    def merge_fragments(self, frgnam1, frgnam2):
+    def merge_fragments(self, frgnam1, frgnam2, remove_bonds=True):
         """
         Merge two fragments by their names.
         :param frgnam1: The name of the first fragment.
@@ -516,8 +516,15 @@ class System:
         """
         frg2 = self.fragments.pop(self.find_index(frgnam2))
         frg1 = self.fragments[self.find_index(frgnam1)]
+        if remove_bonds:
+            for i, (atom1, atom2) in enumerate(self.fmobnd_list):
+                if (atom1 in frg1.atoms and atom2 in frg2.atoms) or (atom1 in frg2.atoms and atom2 in frg1.atoms):
+                    self.fmobnd_list.pop(i)
+                    break
+        # merge the fragments
         for a in frg2.atoms:
             frg1.atoms.append(a)
+
     
     def find_index(self, fragment_name):
         """
@@ -563,7 +570,7 @@ class System:
                 f"{self.fmoprp}\n"
                 f"{self.fmo}\n"
                 f"{self.fmohyb}\n"
-                f"{self.cached_fmobnd or self.fmobnd}\n"
+                f"{self.fmobnd}\n"
                 f"{self.fmodata}\n"
                 f"{self.fmoxyz} \n"
                 )   
