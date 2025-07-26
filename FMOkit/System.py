@@ -95,7 +95,7 @@ class System:
                 charge=row[6]
             )
             
-            comp_id = row[7]
+            comp_id = row[7][:3]  # Get the first three characters for comp_id
             asym_id = row[8]
             seq_id = row[9]
 
@@ -134,7 +134,7 @@ class System:
                 charge=float(row[6])
             )
             
-            comp_id = row[7]
+            comp_id = row[7][:3]  # Get the first three characters for comp_id
             asym_id = row[8]
             seq_id = int(row[9])
 
@@ -511,7 +511,7 @@ class System:
                 cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id-1) # NME/NMA is always at the end
                 if cfrg is not None:
                     self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
-                    
+
     def merge_fragments(self, frgnam1, frgnam2, remove_bonds=True):
         """
         Merge two fragments by their names.
