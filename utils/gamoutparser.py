@@ -70,8 +70,7 @@ def parse_gamout(gamout, output, convert):
 
                 I, J = int(fields['I']), int(fields['J'])
                 components = [("ES", fields['Ees']), ("EX", fields['Eex']), ("CT", fields['Ectmix']),
-                              ("DI", fields['Edisp']), ("SOL", fields['Gsol']), ("R", fields['R']),
-                              ("Q", fields['QIJ'])]
+                              ("DI", fields['Edisp']), ("SOL", fields['Gsol'])]
 
                 for tag, energy in components:
                     for i, (a, b) in enumerate([(I, J), (J, I)]):
