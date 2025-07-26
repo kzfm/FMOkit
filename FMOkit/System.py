@@ -503,15 +503,19 @@ class System:
         This method modifies the fragments by moving the C-terminal atom to the last fragment.
         """
         for frg in self.fragments:
-            if frg.comp_id == "NME" or frg.comp_id == "NMA":
+            if frg.comp_id == "NMA":
+                cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id) # NME/NMA is always at the end
+                if cfrg is not None:
+                    self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
+            elif frg.comp_id == "NME":
                 cfrg = self.find_fragment_by_seqid(frg.asym_id, frg.seq_id-1) # NME/NMA is always at the end
                 if cfrg is not None:
                     self.merge_fragments(cfrg.fragment_name, frg.fragment_name)
-
+                    
     def merge_fragments(self, frgnam1, frgnam2, remove_bonds=True):
         """
         Merge two fragments by their names.
-        :param frgnam1: The name of the first fragment.
+        :param frgnam1: The name of the first fragment.     
         :param frgnam2: The name of the second fragment.
         """
         frg2 = self.fragments.pop(self.find_index(frgnam2))
