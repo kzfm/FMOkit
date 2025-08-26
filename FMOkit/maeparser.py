@@ -39,6 +39,10 @@ def maeparse(maefile):
 
         def parse_line(line_pair):
             els = sum((shlex.split(l) for l in line_pair), [])
+            if not int(els[hdict["anum"]]) in ANUM2ATOM:
+                    print(f"Atom number:{els[hdict["anum"]]} is not in fmodata")
+                    exit()
+
             return [
                 int(els[0]),
                 ANUM2ATOM[int(els[hdict["anum"]])],
