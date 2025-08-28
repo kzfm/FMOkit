@@ -6,8 +6,27 @@ from .maeparser import maeparse
 from math import dist
 import tomllib
 
-ANUMBERS = {"h": 1, "c": 6, "n": 7, "o": 8, "s": 16, "ca": 20,
-           "f": 9, "p": 15, "cl": 17}
+ANUMBERS = {
+    "h": 1,
+    "li": 3,
+    "b": 5,
+    "c": 6,
+    "n": 7,
+    "o": 8,
+    "f": 9,
+    "na": 11,
+    "mg": 12,
+    "si": 14,
+    "p": 15,
+    "s": 16,
+    "cl": 17,
+    "k": 19,
+    "ca": 20,
+    "fe": 26,
+    "zn": 30,
+    "br": 35,
+    "i": 53
+}
 
 def coef_format(coef):
     """

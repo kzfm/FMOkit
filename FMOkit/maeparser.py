@@ -6,8 +6,27 @@ import re
 import shlex
 import gzip
 
-ANUM2ATOM = {1: "H", 6: "C", 7: "N", 8: "O", 16: "S", 20: "CA",
-             9: "F", 15: "P", 17: "CL"}
+ANUM2ATOM = {
+    1:  "H",
+    3:  "LI",
+    5:  "B",
+    6:  "C",
+    7:  "N",
+    8:  "O",
+    9:  "F",
+    11: "NA",
+    12: "MG",
+    14: "SI",
+    15: "P",
+    16: "S",
+    17: "CL",
+    19: "K",
+    20: "CA",
+    26: "FE",
+    30: "ZN",
+    35: "BR",
+    53: "I"
+}
 
 def maeparse(maefile):
     """
