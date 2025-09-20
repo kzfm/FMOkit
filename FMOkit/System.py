@@ -440,6 +440,8 @@ class System:
                         lines.append("       d 1\n       1 0.550 1.0\n")
                     elif a in ["ca"]:
                         lines.append("       d 1\n       1 0.200 1.0\n")
+                    elif a in ["br"]:
+                        lines.append("       d 1\n       1 0.600 1.0\n")
                 else:
                     print(f"basis sets({self.basissets}) is not implemented yet")
                     exit()
