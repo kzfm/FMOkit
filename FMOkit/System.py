@@ -251,6 +251,9 @@ class System:
 
     @property
     def icharge(self):
+        if set([f.charge for f in self.fragments]) == {0}:
+            print("Since the charges of all fragments are zero, please check the input file.")
+        
         charges = [f"{f.charge:> d}" for f in self.fragments]
         lines = [
                 ("      icharg(1)=" if i == 0 else "                ") +
