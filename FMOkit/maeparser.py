@@ -55,6 +55,9 @@ def maeparse(maefile):
         headers = header.split("\n")
         hdict = {v: i for i, h in enumerate(headers) for k, v in field_map.items() if h.endswith(k)}
         lines = data.strip().split("\n")
+        if not "charge" in hdict:
+            print("Charge field not found in MAE file.")
+            exit()
 
         def parse_line(line_pair):
             els = sum((shlex.split(l) for l in line_pair), [])
