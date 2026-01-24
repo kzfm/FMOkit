@@ -90,6 +90,12 @@ Please open an issue to discuss what you’d like to change.
 
 ## Version history
 
+### 0.5 (2026/01/24)
+- Output a warning when the total charge of a fragment is incorrect
+- Support for phosphorylated residues and other residues
+- Switch from setup.py to pyproject.toml
+- Add Br atom
+
 ### 0.4 (2025/07/13)
 - Implemented FMO-DFTB input support via the mkfmodftbinp utility
 - Enhanced gamoutparser to output inter-fragment distance (R) and charge transfer (Q)
