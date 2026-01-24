@@ -57,15 +57,19 @@ def atom_dist(atom1, atom2):
         (atom2.x, atom2.y, atom2.z)
         )
 
+def is_valid_charge(total_charge: float, tol: float = 0.1) -> bool:
+    allowed_charges = (0, 1, -1, 2, -2, 3, -3)
+    return any(abs(total_charge - c) < tol for c in allowed_charges)
+
 class System:
     def __init__(self, **kwargs):
         self.nodes: int = kwargs["nodes"]
         self.cores: int = kwargs["cores"]
         self.memory: int = kwargs["memory"]
         self.basissets: str = kwargs["basissets"]
-        self.fragments: List[Fragment] = []
+        self.fragments: list[Fragment] = []
         self.title: str = "Structure from PDB" # todo: add title to the structure file
-        self.fmobnd_list: List[(Atom, Atom)] = []
+        self.fmobnd_list: list[(Atom, Atom)] = []
         self.charge: str = kwargs["charge"]
         self.asym_id: str = kwargs["asym_id"]
         self.pcm: bool = kwargs.get("pcm", False)
@@ -254,10 +258,14 @@ class System:
 
     @property
     def icharge(self):
-        if set([f.charge for f in self.fragments]) == {0}:
+        for f in self.fragments:
+            if not is_valid_charge(f.charge):
+                print(f"Invalid charge: {f.charge} ({f.seq_id}, {f.comp_id})")
+
+        if set([int(round(f.charge)) for f in self.fragments]) == {0}:
             print("Since the charges of all fragments are zero, please check the input file.")
         
-        charges = [f"{f.charge:> d}" for f in self.fragments]
+        charges = [f"{int(round(f.charge)):> d}" for f in self.fragments]
         lines = [
                 ("      icharg(1)=" if i == 0 else "                ") +
                 ",".join(charges[i:i+10]) +

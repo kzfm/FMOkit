@@ -1,6 +1,6 @@
 AminoAcids = [ "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE",
         "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL",
         "HIE", "HID", "HIP", "LYN", "ASH", "GLH", "SEP", "TPO", "PTR", "Y1P",
-        "S1P", "T1P", "H1D", "H2D", "H1E", H2E"]
+        "S1P", "T1P", "H1D", "H2D", "H1E", "H2E"]
 
  Nucleotides = ["DA", "DG", "DC", "DT", "A", "G", "C", "U"]
