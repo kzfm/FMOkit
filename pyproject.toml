@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FMOkit"
+version = "0.5.0"
+description = "FMO utilities and CLI tools"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+
+dependencies = [
+  "click",
+  "gemmi",
+]
+
+[project.optional-dependencies]
+mmcifprep = [
+  "rdkit",
+  "pdbfixer",
+  "mdtraj",
+  "openmm",
+  "openmmforcefields",
+  "openff-toolkit",
+]
+
+[project.scripts]
+mmcifprep = "utils.mmcifprep:cli"
+mkfmoinp = "utils.mkfmoinp:cli"
+mkfmodftbinp = "utils.mkfmodftbinp:cli"
+gamoutparser = "utils.gamoutparser:cli"
+
+[tool.setuptools]
+packages = { find = { where = ["."] } }
+
+[tool.setuptools.package-data]
+FMOkit = ["config/*.toml"]

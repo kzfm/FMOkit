@@ -5,6 +5,7 @@ from .hyb_carbon import hybrid_orbitals
 from .maeparser import maeparse
 from math import dist
 import tomllib
+import os
 
 ANUMBERS = {
     "h": 1,
@@ -71,7 +72,9 @@ class System:
         self.runtyp: str = kwargs.get("runtyp", "energy")  # default run type
         self.config: str = kwargs["toml"]
 
-        
+
+        if self.config == "":
+            self.config = os.path.join(os.path.dirname(__file__), "config", "config.toml")
         with open(self.config, "rb") as f:
             config = tomllib.load(f)
         self.AAs = config["AminoAcids"]
