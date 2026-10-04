@@ -57,6 +57,10 @@ def atom_dist(atom1, atom2):
         (atom2.x, atom2.y, atom2.z)
         )
 
+# Cysteine residue names, including the Amber disulfide (CYX) and thiolate (CYM) variants.
+CYSTEINES = frozenset({"CYS", "CYX", "CYM"})
+
+
 def is_valid_charge(total_charge: float, tol: float = 0.1) -> bool:
     allowed_charges = (0, 1, -1, 2, -2, 3, -3)
     return any(abs(total_charge - c) < tol for c in allowed_charges)
@@ -589,7 +593,7 @@ class System:
         return None
 
     def search_disulfied_bonds(self):
-        cyss = [f for f in self.fragments if f.comp_id == "CYS"]
+        cyss = [f for f in self.fragments if f.comp_id in CYSTEINES]
         sspairs = []
         sspairs.extend(
         (cys1.fragment_name, cys2.fragment_name)
